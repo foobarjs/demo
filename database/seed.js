@@ -1,4 +1,18 @@
-export default async function seed({ count, faker, model }) {
+function productSvg(name, index) {
+  const colors = ['#f8fafc', '#eff6ff', '#ecfdf5', '#fff7ed', '#fdf2f8', '#f5f3ff'];
+  const accents = ['#0f172a', '#2563eb', '#16a34a', '#ea580c', '#db2777', '#7c3aed'];
+  const background = colors[index % colors.length];
+  const accent = accents[index % accents.length];
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="640" height="480" viewBox="0 0 640 480" role="img" aria-label="${name}">
+  <rect width="640" height="480" rx="32" fill="${background}"/>
+  <circle cx="480" cy="120" r="72" fill="${accent}" opacity=".12"/>
+  <rect x="96" y="116" width="448" height="248" rx="28" fill="#fff" stroke="#e5e7eb"/>
+  <text x="320" y="242" fill="${accent}" font-family="Inter, Arial, sans-serif" font-size="34" font-weight="700" text-anchor="middle">${name}</text>
+  <text x="320" y="286" fill="#64748b" font-family="Inter, Arial, sans-serif" font-size="18" text-anchor="middle">Foobar Commerce</text>
+</svg>`;
+}
+
+export default async function seed({ count, faker, model, storage }) {
   const categories = model('Category');
   const customers = model('Customer');
   const products = model('Product');
@@ -24,19 +38,23 @@ export default async function seed({ count, faker, model }) {
     'Cable Organizer',
     'Minimal Desk Mat',
   ];
-  const createdProducts = productNames.map((name, index) => {
+  const createdProducts = [];
+  for (const [index, name] of productNames.entries()) {
     const price = faker.pick([24, 39, 49, 79, 99, 149, 199]);
-    return products.create({
+    const imagePath = `products/${faker.slug(name)}.svg`;
+    await storage.disk('public').put(imagePath, productSvg(name, index));
+    createdProducts.push(products.create({
       name,
       slug: faker.slug(name),
       sku: `SKU-${String(index + 1).padStart(4, '0')}`,
       description: faker.paragraph(2),
+      imagePath,
       price,
       inventory: faker.int(5, 120),
       status: 'active',
       categoryId: faker.pick(createdCategories).id,
-    });
-  });
+    }));
+  }
 
   const createdCustomers = [];
   const customerCount = Math.max(5, count);

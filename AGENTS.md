@@ -13,6 +13,7 @@ It should showcase realistic business-app usage of the framework:
 - explicit `adminResource()` configuration
 - explicit `apiResource()` configuration
 - schema, migrations, and seeders
+- storage-backed product images and explicit admin upload fields
 - server-rendered storefront pages
 - generated REST API and API docs
 - userland tests that verify the app from the outside
@@ -57,6 +58,13 @@ npm run dev
 ```
 
 ## AI-Facing Notes
+
+Products use `imagePath` as a storage key. `ProductAdmin` explicitly declares
+it with `column('imagePath').image({ disk: 'public', directory: 'products' })`;
+do not infer upload behavior from model strings.
+
+The seeder writes small SVG product images to the public storage disk so demo
+records point at real files.
 
 When changing demo structure, app conventions, or showcased framework features,
 update this file and `README.md` so Copilot and future agents can recover the

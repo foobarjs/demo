@@ -31,11 +31,12 @@ test('demo app serves storefront, API docs, admin, and health', async () => {
     description: 'Useful carry goods.',
     status: 'active',
   });
-  server.repos.get('Product').create({
+  const product = server.repos.get('Product').create({
     name: 'Everyday Tote',
     slug: 'everyday-tote',
     sku: 'BAG-TOTE-001',
     description: 'A sturdy everyday tote.',
+    imagePath: 'products/everyday-tote.svg',
     price: 49,
     inventory: 20,
     status: 'active',
@@ -56,6 +57,7 @@ test('demo app serves storefront, API docs, admin, and health', async () => {
     const products = await fetch(`${base}/api/products?include=category&withCount=orderItems`);
     const productsPayload = await products.json();
     assert.equal(productsPayload.data[0].category.name, 'Bags');
+    assert.equal(productsPayload.data[0].imagePath, 'products/everyday-tote.svg');
     assert.equal(productsPayload.data[0].orderItemsCount, 0);
 
     const apiDocs = await fetch(`${base}/_docs/api`);
@@ -73,6 +75,12 @@ test('demo app serves storefront, API docs, admin, and health', async () => {
     const dashboard = await fetch(`${base}/_admin`, { headers: { cookie } });
     assert.equal(dashboard.status, 200);
     assert.match(await dashboard.text(), /Products/);
+
+    const productEdit = await fetch(`${base}/_admin/product/${product.id}/edit`, { headers: { cookie } });
+    assert.equal(productEdit.status, 200);
+    const productEditHtml = await productEdit.text();
+    assert.match(productEditHtml, /enctype="multipart\/form-data"/);
+    assert.match(productEditHtml, /type="file" name="imagePath" accept="image\/\*"/);
   } finally {
     await new Promise((resolve) => server.close(resolve));
   }

@@ -22,6 +22,7 @@ export async function up(schema) {
     table.string("slug").notNullable().unique()
     table.string("sku").notNullable().unique()
     table.text("description")
+    table.string("image_path")
     table.decimal("price").notNullable()
     table.integer("inventory").notNullable().default(0)
     table.string("status").default("active")

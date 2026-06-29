@@ -4,6 +4,7 @@ export default adminResource('Product', {
   label: 'Products',
   display: 'name',
   list: [
+    column('imagePath').image({ disk: 'public', directory: 'products' }).label('Image'),
     column('name').searchable().sortable(),
     column('sku').searchable().sortable().label('SKU'),
     column('category').relationship({ perPage: 25, placeholder: 'Search categories' }),
@@ -17,6 +18,7 @@ export default adminResource('Product', {
     column('slug').placeholder('everyday-tote'),
     column('sku').placeholder('BAG-TOTE-001'),
     column('description'),
+    column('imagePath').image({ disk: 'public', directory: 'products', preserveName: true }).label('Image'),
     column('price'),
     column('inventory'),
     column('status'),

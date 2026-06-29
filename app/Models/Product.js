@@ -6,6 +6,7 @@ export default model('Product', {
   slug: field.string().required().unique().max(220),
   sku: field.string().required().unique().max(80),
   description: field.text().nullable(),
+  imagePath: field.string().nullable(),
   price: field.decimal({ precision: 10, scale: 2 }).required().min(0),
   inventory: field.integer().required().min(0).default(0),
   status: field.enum(['draft', 'active', 'archived']).default('active'),

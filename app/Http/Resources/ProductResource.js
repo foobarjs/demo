@@ -8,6 +8,7 @@ export default resource('ProductResource', {
       slug: product.slug,
       sku: product.sku,
       description: product.description,
+      imagePath: product.imagePath,
       price: product.price,
       inventory: product.inventory,
       status: product.status,
