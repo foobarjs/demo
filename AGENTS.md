@@ -50,6 +50,7 @@ Use npm and Node's built-in tooling:
 
 ```bash
 npm install
+cp .env.example .env
 npm test
 npx foobar schema:push
 npm run seed -- --fresh --count 25

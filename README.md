@@ -4,6 +4,7 @@ Realistic ecommerce demo app for foobarjs.
 
 ```bash
 npm install
+cp .env.example .env
 npx foobar schema:push
 npm run seed -- --fresh --count 25
 npm run dev
