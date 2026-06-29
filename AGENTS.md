@@ -66,6 +66,11 @@ do not infer upload behavior from model strings.
 The seeder writes small SVG product images to the public storage disk so demo
 records point at real files.
 
+`ProductResource` should not access `product.category` directly. Use
+`product.whenLoaded('category')` and serializer `{ includes, withCount }`
+options so `/api/products` stays lean unless callers request
+`?include=category` or `?withCount=orderItems`.
+
 When changing demo structure, app conventions, or showcased framework features,
 update this file and `README.md` so Copilot and future agents can recover the
 current direction quickly.

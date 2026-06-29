@@ -54,6 +54,11 @@ test('demo app serves storefront, API docs, admin, and health', async () => {
     const health = await fetch(`${base}/_health`);
     assert.deepEqual(await health.json(), { ok: true, app: 'foobarjs-ecommerce' });
 
+    const defaultProducts = await fetch(`${base}/api/products`);
+    const defaultProductsPayload = await defaultProducts.json();
+    assert.equal(defaultProductsPayload.data[0].category, null);
+    assert.equal(defaultProductsPayload.data[0].orderItemsCount, undefined);
+
     const products = await fetch(`${base}/api/products?include=category&withCount=orderItems`);
     const productsPayload = await products.json();
     assert.equal(productsPayload.data[0].category.name, 'Bags');
