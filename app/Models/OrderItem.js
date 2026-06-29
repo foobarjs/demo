@@ -8,6 +8,7 @@ export default model('OrderItem', {
   quantity: field.integer().required().min(1),
   unitPrice: field.decimal({ precision: 10, scale: 2 }).required().min(0),
   total: field.decimal({ precision: 10, scale: 2 }).required().min(0),
+  ...field.timestamps(),
 }, {
   indexes: ['orderId', 'productId', 'sku'],
 });

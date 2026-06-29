@@ -5,4 +5,5 @@ export default model('Page', {
   slug: field.string().required().unique(),
   body: field.text().nullable(),
   status: field.enum(['draft', 'published']).default('draft'),
+  ...field.timestamps(),
 });

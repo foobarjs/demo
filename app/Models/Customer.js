@@ -7,6 +7,7 @@ export default model('Customer', {
   phone: field.string().nullable().max(40),
   status: field.enum(['lead', 'active', 'vip', 'blocked']).default('active'),
   orders: hasMany('Order'),
+  ...field.timestamps(),
 }, {
   indexes: ['email', 'status'],
   scopes: {

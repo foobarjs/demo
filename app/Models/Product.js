@@ -10,6 +10,7 @@ export default model('Product', {
   status: field.enum(['draft', 'active', 'archived']).default('active'),
   category: belongsTo('Category').nullable(),
   orderItems: hasMany('OrderItem'),
+  ...field.timestamps(),
 }, {
   indexes: ['sku', 'slug', 'status', 'categoryId'],
   scopes: {

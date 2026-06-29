@@ -6,6 +6,7 @@ export default model('Category', {
   description: field.text().nullable(),
   status: field.enum(['draft', 'active', 'archived']).default('active'),
   products: hasMany('Product'),
+  ...field.timestamps(),
 }, {
   indexes: ['slug', 'status'],
   scopes: {

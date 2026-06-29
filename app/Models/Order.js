@@ -10,6 +10,7 @@ export default model('Order', {
   total: field.decimal({ precision: 10, scale: 2 }).required().min(0),
   customer: belongsTo('Customer').nullable(),
   items: hasMany('OrderItem'),
+  ...field.timestamps(),
 }, {
   indexes: ['number', 'email', 'status', 'customerId'],
   scopes: {
