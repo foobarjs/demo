@@ -3,8 +3,7 @@
   "private": true,
   "type": "module",
   "dependencies": {
-    "@foobarjs/cli": "file:../framework/foobar",
-    "@foobarjs/framework": "file:../framework/foobarjs"
+    "foobarjs": "git+ssh://git@github.com/foobarjs/foobarjs.git#main"
   },
   "engines": {
     "node": ">=24.17.0"

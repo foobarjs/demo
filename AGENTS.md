@@ -19,17 +19,16 @@ It should showcase realistic business-app usage of the framework:
 
 ## Local Framework Link
 
-During local development this app depends on the sibling framework checkout:
+During the GitHub beta this app depends on the framework repo root:
 
 ```json
 {
-  "@foobarjs/cli": "file:../framework/foobar",
-  "@foobarjs/framework": "file:../framework/foobarjs"
+  "foobarjs": "git+ssh://git@github.com/foobarjs/foobarjs.git#main"
 }
 ```
 
-Keep those links while working inside `/Users/robel/Work/Personal/foobarjs`.
-Published demo releases may switch to npm versions.
+That package installs the workspace packages used by app imports and the
+`foobar` binary. Published demo releases may switch to scoped npm versions.
 
 Keep `package.json` scripts minimal. Use scripts for common app lifecycle
 shortcuts such as `dev`, `serve`, `seed`, `doctor`, and `test`; use direct
