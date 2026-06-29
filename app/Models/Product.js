@@ -1,6 +1,7 @@
 import { belongsTo, field, hasMany, model } from '@foobarjs/framework';
 
 export default model('Product', {
+  ...field.id(),
   name: field.string().required().max(180),
   slug: field.string().required().unique().max(220),
   sku: field.string().required().unique().max(80),

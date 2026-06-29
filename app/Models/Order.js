@@ -1,6 +1,7 @@
 import { belongsTo, field, hasMany, model } from '@foobarjs/framework';
 
 export default model('Order', {
+  ...field.id(),
   number: field.string().required().unique().max(40),
   email: field.string().required().email().max(255),
   status: field.enum(['draft', 'pending', 'paid', 'fulfilled', 'cancelled', 'refunded']).default('pending'),

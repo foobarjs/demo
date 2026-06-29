@@ -1,6 +1,7 @@
 import { field, hasMany, model } from '@foobarjs/framework';
 
 export default model('Customer', {
+  ...field.id(),
   firstName: field.string().required().max(120),
   lastName: field.string().required().max(120),
   email: field.string().required().email().unique().max(255),

@@ -1,6 +1,7 @@
 import { field, hasMany, model } from '@foobarjs/framework';
 
 export default model('Category', {
+  ...field.id(),
   name: field.string().required().max(120),
   slug: field.string().required().unique().max(160),
   description: field.text().nullable(),

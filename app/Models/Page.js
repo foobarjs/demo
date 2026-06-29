@@ -1,6 +1,7 @@
 import { field, model } from '@foobarjs/framework';
 
 export default model('Page', {
+  ...field.id(),
   title: field.string().required().max(255),
   slug: field.string().required().unique(),
   body: field.text().nullable(),

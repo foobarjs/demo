@@ -1,6 +1,7 @@
 import { belongsTo, field, model } from '@foobarjs/framework';
 
 export default model('OrderItem', {
+  ...field.id(),
   order: belongsTo('Order'),
   product: belongsTo('Product'),
   name: field.string().required().max(180),
