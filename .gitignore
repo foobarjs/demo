@@ -5,4 +5,9 @@ database.sqlite
 *.sqlite
 *.sqlite-shm
 *.sqlite-wal
+storage/app/*
+!storage/app/.gitkeep
+!storage/app/public/
+storage/app/public/*
+!storage/app/public/.gitkeep
 .DS_Store
