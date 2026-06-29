@@ -1,0 +1,7 @@
+node_modules/
+.foobar/
+database.sqlite
+*.sqlite
+*.sqlite-shm
+*.sqlite-wal
+.DS_Store

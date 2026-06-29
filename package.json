@@ -1,0 +1,28 @@
+{
+  "name": "foobarjs-ecommerce-app",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@foobarjs/cli": "file:../framework/foobar",
+    "@foobarjs/framework": "file:../framework/foobarjs"
+  },
+  "engines": {
+    "node": ">=24.17.0"
+  },
+  "scripts": {
+    "test": "node --test \"tests/*.test.js\"",
+    "serve": "foobar serve",
+    "dev": "foobar dev",
+    "dev:admin": "foobar dev:admin",
+    "doctor": "foobar doctor",
+    "schema:diff": "foobar schema:diff",
+    "schema:push": "foobar schema:push",
+    "api:docs": "foobar api:docs",
+    "migrate": "foobar migrate",
+    "migrate:status": "foobar migrate:status",
+    "migrate:rollback": "foobar migrate:rollback",
+    "migrate:reset": "foobar migrate:reset",
+    "migrate:fresh": "foobar migrate:fresh",
+    "seed": "foobar db:seed"
+  }
+}

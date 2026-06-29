@@ -1,0 +1,10 @@
+<h1>{{ title }}</h1>
+<p>{{ product.description }}</p>
+<p><strong>${{ product.price }}</strong> · SKU {{ product.sku }}</p>
+
+<form method="post" action="/checkout">
+  <input type="hidden" name="productId" value="{{ product.id }}">
+  <label>Email <input name="email" type="email" value="buyer@example.com"></label>
+  <label>Quantity <input name="quantity" type="number" min="1" value="1"></label>
+  <button>Place order</button>
+</form>
