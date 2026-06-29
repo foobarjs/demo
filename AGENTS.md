@@ -31,6 +31,11 @@ During local development this app depends on the sibling framework checkout:
 Keep those links while working inside `/Users/robel/Work/Personal/foobarjs`.
 Published demo releases may switch to npm versions.
 
+Keep `package.json` scripts minimal. Use scripts for common app lifecycle
+shortcuts such as `dev`, `serve`, `seed`, `doctor`, and `test`; use direct
+`foobar ...` or `npx foobar ...` commands for schema, migration, API docs, and
+inspection tasks.
+
 ## Boundaries
 
 This repo should contain app/userland code only.
@@ -46,7 +51,7 @@ Use npm and Node's built-in tooling:
 ```bash
 npm install
 npm test
-npm run schema:push
+npx foobar schema:push
 npm run seed -- --fresh --count 25
 npm run dev
 ```
