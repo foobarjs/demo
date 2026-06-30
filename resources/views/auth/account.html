@@ -1,0 +1,9 @@
+<h1>{{ title }}</h1>
+<p>Signed in as <strong>{{ user.email }}</strong>.</p>
+
+<form method="post" action="{{ routes.logout }}">
+  {{{ csrfInput }}}
+  <button>Sign out</button>
+</form>
+
+<p><a href="{{ routes.home }}">Back to storefront</a></p>

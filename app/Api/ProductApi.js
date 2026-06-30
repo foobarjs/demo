@@ -12,7 +12,13 @@ export default apiResource('Product', {
     store: 'StoreProductRequest',
     update: 'UpdateProductRequest',
   },
-  authorize: false,
+  authorize: {
+    index: 'viewAny',
+    show: 'view',
+    store: 'apiStore',
+    update: 'apiUpdate',
+    destroy: 'apiDelete',
+  },
   middleware: ['api'],
   docs: {
     summary: 'Products available in the storefront catalog.',

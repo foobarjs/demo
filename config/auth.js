@@ -3,5 +3,5 @@ export default {
   identifier: 'email',
   passwordField: 'password',
   loginPath: '/login',
-  home: '/',
+  home: '/account',
 };

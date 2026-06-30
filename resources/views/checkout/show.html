@@ -1,10 +1,68 @@
-<h1>{{ title }}</h1>
-<p>{{ product.description }}</p>
-<p><strong>${{ product.price }}</strong> · SKU {{ product.sku }}</p>
+<div>
+  <h1>{{ title }}</h1>
+  <p>{{ product.description }}</p>
+  <p><strong>${{ product.price }}</strong> · SKU {{ product.sku }}</p>
 
-<form method="post" action="/checkout">
-  <input type="hidden" name="productId" value="{{ product.id }}">
-  <label>Email <input name="email" type="email" value="buyer@example.com"></label>
-  <label>Quantity <input name="quantity" type="number" min="1" value="1"></label>
-  <button>Place order</button>
-</form>
+  {{#if product.inventory > 0}}
+    <p style="color: green;">{{ product.inventory }} in stock</p>
+  {{else}}
+    <p style="color: red;"><strong>Out of stock</strong></p>
+  {{/if}}
+
+  {{#if errors}}
+    <div style="background: #fee; padding: 1rem; margin: 1rem 0; border: 1px solid #f88; color: #c00;">
+      <strong>There were errors with your order:</strong>
+      <ul>
+        {{#each errors}}
+          <li>{{ @key }}: {{ this.[0] }}</li>
+        {{/each}}
+      </ul>
+    </div>
+  {{/if}}
+
+  {{#if product.inventory > 0}}
+    <form method="post" action="{{ routes.checkoutStore }}">
+      {{{ csrfInput }}}
+      <input type="hidden" name="productId" value="{{ product.id }}">
+      <fieldset>
+        <legend>Order Details</legend>
+        <label>
+          Email
+          <input
+            name="email"
+            type="email"
+            required
+            placeholder="your@email.com"
+            value="{{ old.email }}"
+            style="{{#if errors.email}}border-color: #f88;{{/if}}"
+          >
+        </label>
+        {{#if errors.email}}
+          <small style="color: #c00;">{{ errors.email.[0] }}</small>
+        {{/if}}
+
+        <label>
+          Quantity (max {{ product.inventory }})
+          <input
+            name="quantity"
+            type="number"
+            required
+            min="1"
+            max="{{ product.inventory }}"
+            value="{{ old.quantity || 1 }}"
+            style="{{#if errors.quantity}}border-color: #f88;{{/if}}"
+          >
+        </label>
+        {{#if errors.quantity}}
+          <small style="color: #c00;">{{ errors.quantity.[0] }}</small>
+        {{/if}}
+      </fieldset>
+
+      <button type="submit" {{#unless product.inventory > 0}}disabled{{/unless}}>
+        Place Order
+      </button>
+    </form>
+  {{else}}
+    <p style="color: #666;">This product is currently out of stock. Please check back soon.</p>
+  {{/if}}
+</div>

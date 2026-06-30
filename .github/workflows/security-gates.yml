@@ -1,0 +1,50 @@
+name: Beta Release Gates
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+jobs:
+  demo-beta:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: demo
+    steps:
+      - name: Checkout demo
+        uses: actions/checkout@v4
+        with:
+          path: demo
+
+      - name: Checkout framework
+        uses: actions/checkout@v4
+        with:
+          repository: foobarjs/foobarjs
+          path: framework
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: demo/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Verify production secret guards
+        run: |
+          APP_ENV=production APP_SECRET=test-secret FOOBAR_ADMIN_PASSWORD=test-password node -e "import('./config/app.js'); import('./config/admin.js');"
+          if APP_ENV=production FOOBAR_ADMIN_PASSWORD=test-password node -e "import('./config/app.js');"; then
+            echo "Expected config/app.js to fail without APP_SECRET in production"
+            exit 1
+          fi
+          APP_ENV=production APP_SECRET=test-secret node -e "import('./config/admin.js');"
+
+      - name: Run demo test suite
+        run: npm test
+
+      - name: Run demo beta security gate
+        run: npm run test:security

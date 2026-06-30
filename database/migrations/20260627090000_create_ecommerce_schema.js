@@ -1,4 +1,13 @@
 export async function up(schema) {
+  schema.create("users", table => {
+    table.id()
+    table.string("name").notNullable()
+    table.string("email").notNullable().unique()
+    table.string("password").notNullable()
+    table.string("role").default("admin")
+    table.string("status").default("active")
+    table.timestamps()
+  })
   schema.create("categories", table => {
     table.id()
     table.string("name").notNullable()
@@ -69,4 +78,5 @@ export async function down(schema) {
   schema.dropIfExists("customers")
   schema.dropIfExists("categories")
   schema.dropIfExists("pages")
+  schema.dropIfExists("users")
 }

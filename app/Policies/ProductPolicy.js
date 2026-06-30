@@ -6,6 +6,9 @@ export default policy('Product', {
   create: true,
   update: true,
   delete: true,
+  apiStore: ({ user }) => user?.role === 'admin',
+  apiUpdate: ({ user }) => user?.role === 'admin',
+  apiDelete: ({ user }) => user?.role === 'admin',
   'action:archive': true,
   'action:restock': true,
 });

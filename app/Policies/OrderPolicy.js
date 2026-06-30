@@ -1,13 +1,13 @@
 import { policy } from '@foobarjs/framework';
 
 export default policy('Order', {
-  viewAny: true,
-  view: true,
-  create: true,
-  update: true,
+  viewAny: ({ user }) => user?.role === 'admin',
+  view: ({ user }) => user?.role === 'admin',
+  create: ({ user }) => user?.role === 'admin',
+  update: ({ user }) => user?.role === 'admin',
   delete: false,
-  'action:markPaid': true,
-  'action:fulfill': true,
-  'action:cancelWithReason': true,
-  'action:cancelSelected': true,
+  'action:markPaid': ({ user }) => user?.role === 'admin',
+  'action:fulfill': ({ user }) => user?.role === 'admin',
+  'action:cancelWithReason': ({ user }) => user?.role === 'admin',
+  'action:cancelSelected': ({ user }) => user?.role === 'admin',
 });

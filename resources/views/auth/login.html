@@ -1,0 +1,11 @@
+<h1>{{ title }}</h1>
+<p>Sign in with your application user account.</p>
+
+<form method="post" action="{{ routes.loginStore }}">
+  {{{ csrfInput }}}
+  <label>Email <input name="email" type="email" value="{{ old.email }}" required></label>
+  <label>Password <input name="password" type="password" required></label>
+  <button>Sign in</button>
+</form>
+
+<p>{{ errors.0.message }}</p>

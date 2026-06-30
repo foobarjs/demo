@@ -1,3 +1,5 @@
+import { hashPassword } from '@foobarjs/framework';
+
 function productSvg(name, index) {
   const colors = ['#f8fafc', '#eff6ff', '#ecfdf5', '#fff7ed', '#fdf2f8', '#f5f3ff'];
   const accents = ['#0f172a', '#2563eb', '#16a34a', '#ea580c', '#db2777', '#7c3aed'];
@@ -19,6 +21,14 @@ export default async function seed({ count, faker, model, storage }) {
   const orders = model('Order');
   const orderItems = model('OrderItem');
   const pages = model('Page');
+  const users = model('User');
+
+  users.firstOrCreate({ email: 'admin@shop.test' }, {
+    name: 'Demo Admin',
+    password: await hashPassword(process.env.FOOBAR_ADMIN_PASSWORD || 'password'),
+    role: 'admin',
+    status: 'active',
+  });
 
   const categoryNames = ['Bags', 'Desk', 'Drinkware', 'Apparel', 'Accessories'];
   const createdCategories = categoryNames.map((name) => categories.create({
