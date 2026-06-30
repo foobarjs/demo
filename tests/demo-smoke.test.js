@@ -56,8 +56,8 @@ test('demo app serves storefront, API docs, admin, and health', async () => {
 
     const defaultProducts = await fetch(`${base}/api/products`);
     const defaultProductsPayload = await defaultProducts.json();
-    assert.equal(defaultProductsPayload.data[0].category, null);
-    assert.equal(defaultProductsPayload.data[0].orderItemsCount, undefined);
+    assert.equal(Object.hasOwn(defaultProductsPayload.data[0], 'category'), false);
+    assert.equal(Object.hasOwn(defaultProductsPayload.data[0], 'orderItemsCount'), false);
 
     const products = await fetch(`${base}/api/products?include=category&withCount=orderItems`);
     const productsPayload = await products.json();

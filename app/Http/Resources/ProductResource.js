@@ -2,7 +2,6 @@ import { resource } from '@foobarjs/framework';
 
 export default resource('ProductResource', {
   toObject(product, ctx, { includes = [], withCount = [] } = {}) {
-    const category = product.whenLoaded('category');
     return {
       id: product.id,
       name: product.name,
@@ -14,11 +13,11 @@ export default resource('ProductResource', {
       inventory: product.inventory,
       status: product.status,
       categoryId: product.categoryId,
-      category: includes.includes('category') && category ? {
+      category: product.whenLoaded('category', category => category ? {
         id: category.id,
         name: category.name,
         slug: category.slug,
-      } : null,
+      } : null),
       orderItemsCount: withCount.includes('orderItems') ? product.orderItemsCount : undefined,
     };
   },
