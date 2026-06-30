@@ -66,12 +66,12 @@ do not infer upload behavior from model strings.
 The seeder writes small SVG product images to the public storage disk so demo
 records point at real files.
 
-`ProductResource` should not access `product.category` directly. Use
-`product.whenLoaded('category')` and serializer `{ withCount }` options so
-`/api/products` omits relationship/count fields unless callers request
-`?include=category` or `?withCount=orderItems`. In API JSON, omitted means not
-included; `null` means the relationship was included and no related record
-exists.
+`ProductApi` intentionally does not configure `resource`; it showcases the
+framework's model-aware default API serializer. `/api/products` should still
+honor `?include=category` and `?withCount=orderItems`. If a resource is added
+later, `ProductResource` should not access `product.category` directly; use
+`product.whenLoaded('category')`. In API JSON, omitted means not included;
+`null` means the relationship was included and no related record exists.
 
 When changing demo structure, app conventions, or showcased framework features,
 update this file and `README.md` so Copilot and future agents can recover the

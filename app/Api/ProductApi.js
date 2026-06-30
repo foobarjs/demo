@@ -1,8 +1,6 @@
 import { apiResource } from '@foobarjs/framework';
 
 export default apiResource('Product', {
-  path: '/api/products',
-  resource: 'ProductResource',
   search: 'name',
   filters: ['status', 'categoryId'],
   sort: ['id', 'name', 'price', 'inventory', 'status'],
