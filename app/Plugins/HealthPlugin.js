@@ -1,18 +1,18 @@
-import { job, plugin } from '@foobarjs/framework';
+import { plugin } from '@foobarjs/framework';
 
-export default plugin('health', ({ addAdminLink, addAdminWidget, addJob, route, schedule }) => {
-  route.get('/_health', (ctx) => ctx.json({
+export default plugin('health', (plugin) => {
+  plugin.route.get('/_health', (ctx) => ctx.json({
     ok: true,
     app: 'foobarjs-ecommerce',
   }));
 
-  addAdminLink({ label: 'Health', href: '/_health' });
-  addAdminWidget({ label: 'Health', value: 'OK', href: '/_health' });
+  plugin.admin.link({ label: 'Health', href: '/_health' });
+  plugin.admin.widget({ label: 'Health', value: 'OK', href: '/_health' });
 
-  addJob(job('HealthCheck', async () => ({
+  plugin.job('HealthCheck', async () => ({
     ok: true,
     checkedAt: new Date().toISOString(),
-  })));
+  }));
 
-  schedule.hourly('HealthCheck');
+  plugin.schedule.hourly('HealthCheck');
 });

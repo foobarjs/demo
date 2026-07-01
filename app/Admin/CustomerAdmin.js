@@ -1,4 +1,4 @@
-import { adminResource, column, filter, lens } from '@foobarjs/framework';
+import { adminResource, column, filter, lens } from '@foobarjs/framework/admin';
 
 export default adminResource('Customer', {
   label: 'Customers',

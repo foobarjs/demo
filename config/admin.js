@@ -34,7 +34,7 @@ export default {
     statusField: 'status',
     activeStatuses: ['active'],
   },
-  brand: 'Demo',
+  brand: 'Demo Ecommerce Admin',
   theme: {
     // density: 'compact',
     // primary: '#18181b',

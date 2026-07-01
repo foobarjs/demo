@@ -1,4 +1,5 @@
-import { action, adminResource, column, field, filter, lens } from '@foobarjs/framework';
+import { field } from '@foobarjs/framework';
+import { action, adminResource, column, filter, lens } from '@foobarjs/framework/admin';
 
 const statusBadges = {
   draft: 'secondary',
