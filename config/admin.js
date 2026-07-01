@@ -35,6 +35,7 @@ export default {
     activeStatuses: ['active'],
   },
   brand: 'Demo Ecommerce Admin',
+  path: '/admin',
   theme: {
     // density: 'compact',
     // primary: '#18181b',

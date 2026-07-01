@@ -4,6 +4,7 @@ import { once } from 'node:events';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { buildOpenApi, createServer, hashPassword, loadAppGraph } from '@foobarjs/framework';
+import adminConfig from '../config/admin.js';
 import middlewareConfig from '../config/middleware.js';
 
 const demoRoot = path.dirname(path.dirname(fileURLToPath(import.meta.url)));
@@ -60,6 +61,7 @@ test('demo app serves storefront, API docs, admin, and health', async () => {
 
   try {
     const base = `http://127.0.0.1:${server.address().port}`;
+    const adminPath = String(adminConfig.path || '/_admin').replace(/\/+$/, '') || '/_admin';
     const home = await fetch(`${base}/`);
     assert.equal(home.status, 200);
     assert.ok(home.headers.get('x-frame-options'));
@@ -113,7 +115,7 @@ test('demo app serves storefront, API docs, admin, and health', async () => {
     assert.equal(apiDocs.status, 200);
     assert.match(await apiDocs.text(), /foobarjs API Docs/);
 
-    const login = await fetch(`${base}/_admin/login`, {
+    const login = await fetch(`${base}${adminPath}/login`, {
       method: 'POST',
       headers: { 'content-type': 'application/x-www-form-urlencoded' },
       body: new URLSearchParams({ email: 'admin@shop.test', password: 'password' }),
@@ -121,11 +123,11 @@ test('demo app serves storefront, API docs, admin, and health', async () => {
     });
     assert.equal(login.status, 302);
     const cookie = login.headers.get('set-cookie').split(/,\s*/).map((item) => item.split(';')[0]).join('; ');
-    const dashboard = await fetch(`${base}/_admin`, { headers: { cookie } });
+    const dashboard = await fetch(`${base}${adminPath}`, { headers: { cookie } });
     assert.equal(dashboard.status, 200);
     assert.match(await dashboard.text(), /Products/);
 
-    const productEdit = await fetch(`${base}/_admin/product/${product.id}/edit`, { headers: { cookie } });
+    const productEdit = await fetch(`${base}${adminPath}/product/${product.id}/edit`, { headers: { cookie } });
     assert.equal(productEdit.status, 200);
     const productEditHtml = await productEdit.text();
     assert.match(productEditHtml, /enctype="multipart\/form-data"/);
