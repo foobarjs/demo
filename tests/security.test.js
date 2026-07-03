@@ -4,9 +4,9 @@ import { once } from 'node:events';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createServer } from '@foobarjs/framework';
-import middlewareConfig from '../config/middleware.js';
-import StoreProductRequest from '../app/Http/Requests/StoreProductRequest.js';
-import UpdateProductRequest from '../app/Http/Requests/UpdateProductRequest.js';
+import middlewareConfig from '#config/middleware.js';
+import StoreProductRequest from '#app/Http/Requests/StoreProductRequest.js';
+import UpdateProductRequest from '#app/Http/Requests/UpdateProductRequest.js';
 
 const demoRoot = path.dirname(path.dirname(fileURLToPath(import.meta.url)));
 

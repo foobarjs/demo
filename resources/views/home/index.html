@@ -14,5 +14,15 @@
 
 <h2>Featured products</h2>
 <ul>
-  {{{ productList }}}
+  @forelse(products as product)
+    <li>
+      @if(product.imageUrl)
+        <img src="{{ product.imageUrl }}" alt="" width="72" height="54">
+      @endif
+      <strong>{{ product.name }}</strong> · ${{ product.price }} ·
+      <a href="{{ product.checkoutUrl }}">Buy</a>
+    </li>
+  @empty
+    <li>No products yet. Run npm run seed -- --fresh --count 25.</li>
+  @endforelse
 </ul>

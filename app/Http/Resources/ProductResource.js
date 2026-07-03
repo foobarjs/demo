@@ -1,7 +1,7 @@
-import { resource } from '@foobarjs/framework';
+import { Resource } from '@foobarjs/framework';
 
-export default resource('ProductResource', {
-  toObject(product, ctx, { includes = [], withCount = [] } = {}) {
+export default class ProductResource extends Resource {
+  toObject(product, ctx, { withCount = [] } = {}) {
     return {
       id: product.id,
       name: product.name,
@@ -20,5 +20,5 @@ export default resource('ProductResource', {
       } : null),
       orderItemsCount: withCount.includes('orderItems') ? product.orderItemsCount : undefined,
     };
-  },
-});
+  }
+}

@@ -1,8 +1,9 @@
-import { controller, escapeHtml } from '@foobarjs/framework';
+import { Controller } from '@foobarjs/framework';
+import Product from '#app/Models/Product.js';
 
-export default controller('HomeController', {
+export default class HomeController extends Controller {
   async index(ctx) {
-    const products = ctx.model('Product').active().latest('id').limit(6).get();
+    const products = Product.active().latest('id').limit(6).get();
     const links = {
       checkout: ctx.route('checkout.show', { product: 1 }),
       login: ctx.route('auth.login.show'),
@@ -10,19 +11,16 @@ export default controller('HomeController', {
       productsApi: '/api/products',
       admin: '/_admin',
     };
-    const productList = products.length
-      ? products.map((product) => {
-          const image = product.imagePath
-            ? `<img src="${ctx.storage.disk('public').url(product.imagePath)}" alt="" width="72" height="54"> `
-            : '';
-          return `<li>${image}<strong>${escapeHtml(product.name)}</strong> · $${escapeHtml(product.price)} · <a href="${ctx.route('checkout.show', { product: product.id })}">Buy</a></li>`;
-        }).join('')
-      : '<li>No products yet. Run npm run seed -- --fresh --count 25.</li>';
+    const productViews = products.map((product) => ({
+      ...product,
+      imageUrl: product.imagePath ? ctx.storage.disk('public').url(product.imagePath) : null,
+      checkoutUrl: ctx.route('checkout.show', { product: product.id }),
+    }));
     return ctx.view('home/index', {
       title: 'Foobar Commerce',
       message: 'A tiny ecommerce app showcasing foobarjs models, admin, API resources, jobs, events, and seeders.',
       links,
-      productList,
+      products: productViews,
     });
-  },
-});
+  }
+}

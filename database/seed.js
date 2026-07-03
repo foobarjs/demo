@@ -1,4 +1,11 @@
 import { hashPassword } from '@foobarjs/framework';
+import Category from '#app/Models/Category.js';
+import Customer from '#app/Models/Customer.js';
+import Order from '#app/Models/Order.js';
+import OrderItem from '#app/Models/OrderItem.js';
+import Page from '#app/Models/Page.js';
+import Product from '#app/Models/Product.js';
+import User from '#app/Models/User.js';
 
 function productSvg(name, index) {
   const colors = ['#f8fafc', '#eff6ff', '#ecfdf5', '#fff7ed', '#fdf2f8', '#f5f3ff'];
@@ -14,16 +21,8 @@ function productSvg(name, index) {
 </svg>`;
 }
 
-export default async function seed({ count, faker, model, storage }) {
-  const categories = model('Category');
-  const customers = model('Customer');
-  const products = model('Product');
-  const orders = model('Order');
-  const orderItems = model('OrderItem');
-  const pages = model('Page');
-  const users = model('User');
-
-  users.firstOrCreate({ email: 'admin@shop.test' }, {
+export default async function seed({ count, faker, storage }) {
+  User.firstOrCreate({ email: 'admin@shop.test' }, {
     name: 'Demo Admin',
     password: await hashPassword(process.env.FOOBAR_ADMIN_PASSWORD || 'password'),
     role: 'admin',
@@ -31,7 +30,7 @@ export default async function seed({ count, faker, model, storage }) {
   });
 
   const categoryNames = ['Bags', 'Desk', 'Drinkware', 'Apparel', 'Accessories'];
-  const createdCategories = categoryNames.map((name) => categories.create({
+  const createdCategories = categoryNames.map((name) => Category.create({
     name,
     slug: faker.slug(name),
     description: faker.paragraph(2),
@@ -53,7 +52,7 @@ export default async function seed({ count, faker, model, storage }) {
     const price = faker.pick([24, 39, 49, 79, 99, 149, 199]);
     const imagePath = `products/${faker.slug(name)}.svg`;
     await storage.disk('public').put(imagePath, productSvg(name, index));
-    createdProducts.push(products.create({
+    createdProducts.push(Product.create({
       name,
       slug: faker.slug(name),
       sku: `SKU-${String(index + 1).padStart(4, '0')}`,
@@ -71,7 +70,7 @@ export default async function seed({ count, faker, model, storage }) {
   for (let index = 0; index < customerCount; index += 1) {
     const firstName = faker.firstName();
     const lastName = faker.lastName();
-    createdCustomers.push(customers.create({
+    createdCustomers.push(Customer.create({
       firstName,
       lastName,
       email: faker.email(firstName, lastName, 'shop.test'),
@@ -81,7 +80,7 @@ export default async function seed({ count, faker, model, storage }) {
   }
 
   for (const title of ['Home', 'Shipping Policy', 'Returns', 'About']) {
-    pages.create({
+    Page.create({
       title,
       slug: faker.slug(title),
       body: faker.paragraph(3),
@@ -99,7 +98,7 @@ export default async function seed({ count, faker, model, storage }) {
     const tax = Number((subtotal * 0.08).toFixed(2));
     const shipping = subtotal >= 100 ? 0 : 9.99;
     const total = Number((subtotal + tax + shipping).toFixed(2));
-    const order = orders.create({
+    const order = Order.create({
       number: `ORD-${String(index + 1).padStart(5, '0')}`,
       email: customer.email,
       status: faker.pick(statuses),
@@ -110,7 +109,7 @@ export default async function seed({ count, faker, model, storage }) {
       customerId: customer.id,
     });
 
-    orderItems.create({
+    OrderItem.create({
       orderId: order.id,
       productId: product.id,
       name: product.name,

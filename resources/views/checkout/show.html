@@ -3,24 +3,24 @@
   <p>{{ product.description }}</p>
   <p><strong>${{ product.price }}</strong> · SKU {{ product.sku }}</p>
 
-  {{#if product.inventory > 0}}
+  @if(inStock)
     <p style="color: green;">{{ product.inventory }} in stock</p>
-  {{else}}
+  @else
     <p style="color: red;"><strong>Out of stock</strong></p>
-  {{/if}}
+  @endif
 
-  {{#if errors}}
+  @if(hasErrors)
     <div style="background: #fee; padding: 1rem; margin: 1rem 0; border: 1px solid #f88; color: #c00;">
       <strong>There were errors with your order:</strong>
       <ul>
-        {{#each errors}}
-          <li>{{ @key }}: {{ this.[0] }}</li>
-        {{/each}}
+        @foreach(errors as error)
+          <li>{{ error.field }}: {{ error.message }}</li>
+        @endforeach
       </ul>
     </div>
-  {{/if}}
+  @endif
 
-  {{#if product.inventory > 0}}
+  @if(inStock)
     <form method="post" action="{{ routes.checkoutStore }}">
       {{{ csrfInput }}}
       <input type="hidden" name="productId" value="{{ product.id }}">
@@ -34,12 +34,8 @@
             required
             placeholder="your@email.com"
             value="{{ old.email }}"
-            style="{{#if errors.email}}border-color: #f88;{{/if}}"
           >
         </label>
-        {{#if errors.email}}
-          <small style="color: #c00;">{{ errors.email.[0] }}</small>
-        {{/if}}
 
         <label>
           Quantity (max {{ product.inventory }})
@@ -49,20 +45,14 @@
             required
             min="1"
             max="{{ product.inventory }}"
-            value="{{ old.quantity || 1 }}"
-            style="{{#if errors.quantity}}border-color: #f88;{{/if}}"
+            value="{{ old.quantity }}"
           >
         </label>
-        {{#if errors.quantity}}
-          <small style="color: #c00;">{{ errors.quantity.[0] }}</small>
-        {{/if}}
       </fieldset>
 
-      <button type="submit" {{#unless product.inventory > 0}}disabled{{/unless}}>
-        Place Order
-      </button>
+      <button type="submit">Place Order</button>
     </form>
-  {{else}}
+  @else
     <p style="color: #666;">This product is currently out of stock. Please check back soon.</p>
-  {{/if}}
+  @endif
 </div>

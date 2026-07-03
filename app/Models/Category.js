@@ -1,16 +1,15 @@
-import { field, hasMany, model } from '@foobarjs/framework';
+import { Model, field } from '@foobarjs/framework';
 
-export default model('Category', {
-  ...field.id(),
-  name: field.string().required().max(120),
-  slug: field.string().required().unique().max(160),
-  description: field.text().nullable(),
-  status: field.enum(['draft', 'active', 'archived']).default('active'),
-  products: hasMany('Product'),
-  ...field.timestamps(),
-}, {
-  indexes: ['slug', 'status'],
-  scopes: {
-    active: query => query.where('status', 'active'),
-  },
-});
+export default class Category extends Model {
+  static indexes = ['slug', 'status'];
+
+  name = field.string().required().max(120);
+  slug = field.string().required().unique().max(160);
+  description = field.text().nullable();
+  status = field.enum(['draft', 'active', 'archived']).default('active');
+  products = field.hasMany('Product');
+
+  active() {
+    return this.query().where('status', 'active');
+  }
+}

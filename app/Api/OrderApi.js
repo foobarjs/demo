@@ -1,15 +1,17 @@
-import { apiResource } from '@foobarjs/framework';
+import { ApiResource } from '@foobarjs/framework';
+import Order from '#app/Models/Order.js';
 
-export default apiResource('Order', {
-  path: '/api/orders',
-  resource: 'OrderResource',
-  actions: ['index', 'show'],
-  authorize: {
+export default class OrderApi extends ApiResource {
+  static model = Order;
+  static path = '/api/orders';
+  static resource = 'OrderResource';
+  static actions = ['index', 'show'];
+  static authorize = {
     index: 'viewAny',
     show: 'view',
-  },
-  middleware: ['api'],
-  docs: {
+  };
+  static middleware = ['api'];
+  static docs = {
     summary: 'Read-only order API for backoffice integrations.',
-  },
-});
+  };
+}

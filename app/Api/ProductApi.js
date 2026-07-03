@@ -1,26 +1,28 @@
-import { apiResource } from '@foobarjs/framework';
+import { ApiResource } from '@foobarjs/framework';
+import Product from '#app/Models/Product.js';
 
-export default apiResource('Product', {
-  search: 'name',
-  filters: ['status', 'categoryId'],
-  sort: ['id', 'name', 'price', 'inventory', 'status'],
-  includes: ['category'],
-  withCount: ['orderItems'],
-  pagination: { defaultPerPage: 25, maxPerPage: 50 },
-  actions: ['index', 'show', 'store', 'update', 'destroy'],
-  requests: {
+export default class ProductApi extends ApiResource {
+  static model = Product;
+  static search = 'name';
+  static filters = ['status', 'categoryId'];
+  static sort = ['id', 'name', 'price', 'inventory', 'status'];
+  static includes = ['category'];
+  static withCount = ['orderItems'];
+  static pagination = { defaultPerPage: 25, maxPerPage: 50 };
+  static actions = ['index', 'show', 'store', 'update', 'destroy'];
+  static requests = {
     store: 'StoreProductRequest',
     update: 'UpdateProductRequest',
-  },
-  authorize: {
+  };
+  static authorize = {
     index: 'viewAny',
     show: 'view',
     store: 'apiStore',
     update: 'apiUpdate',
     destroy: 'apiDelete',
-  },
-  middleware: ['api'],
-  docs: {
+  };
+  static middleware = ['api'];
+  static docs = {
     summary: 'Products available in the storefront catalog.',
-  },
-});
+  };
+}

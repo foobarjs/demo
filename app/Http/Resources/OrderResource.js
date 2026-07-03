@@ -1,6 +1,6 @@
-import { resource } from '@foobarjs/framework';
+import { Resource } from '@foobarjs/framework';
 
-export default resource('OrderResource', {
+export default class OrderResource extends Resource {
   async toObject(order, ctx) {
     return {
       id: order.id,
@@ -14,5 +14,5 @@ export default resource('OrderResource', {
       customerId: order.customerId,
       canUpdate: await ctx.can('update', order),
     };
-  },
-});
+  }
+}

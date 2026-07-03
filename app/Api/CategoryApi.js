@@ -1,26 +1,15 @@
-import { apiResource } from '@foobarjs/framework';
+import { ApiResource } from '@foobarjs/framework';
+import Category from '#app/Models/Category.js';
 
-/**
- * Category API resource provides read-only access to product categories.
- *
- * Actions:
- *   - index: List all categories (public read; supports search, filters, sorting).
- *   - show: View a single category (public read).
- *
- * Authorization:
- *   - Public reads allowed; no policy required.
- *
- * Use case:
- *   Storefront filtering, category browse UI, integration sync.
- */
-export default apiResource('Category', {
-  actions: ['index', 'show'],
-  search: 'name',
-  sort: ['id', 'name', 'slug', 'status'],
-  filters: ['status'],
-  pagination: { defaultPerPage: 25, maxPerPage: 100 },
-  middleware: ['api'],
-  docs: {
+export default class CategoryApi extends ApiResource {
+  static model = Category;
+  static actions = ['index', 'show'];
+  static search = 'name';
+  static sort = ['id', 'name', 'slug', 'status'];
+  static filters = ['status'];
+  static pagination = { defaultPerPage: 25, maxPerPage: 100 };
+  static middleware = ['api'];
+  static docs = {
     summary: 'Product categories for storefront and integrations.',
-  },
-});
+  };
+}

@@ -1,6 +1,6 @@
-import { controller } from '@foobarjs/framework';
+import { Controller } from '@foobarjs/framework';
 
-export default controller('LoginController', {
+export default class LoginController extends Controller {
   async show(ctx) {
     return ctx.view('auth/login', {
       title: 'Sign in',
@@ -8,7 +8,7 @@ export default controller('LoginController', {
         loginStore: ctx.route('auth.login.store'),
       },
     });
-  },
+  }
 
   async store(ctx) {
     const credentials = await ctx.body();
@@ -21,7 +21,7 @@ export default controller('LoginController', {
     }
 
     return ctx.redirectRoute('auth.account');
-  },
+  }
 
   async account(ctx) {
     return ctx.view('auth/account', {
@@ -32,10 +32,10 @@ export default controller('LoginController', {
         home: ctx.route('home'),
       },
     });
-  },
+  }
 
   async logout(ctx) {
     ctx.auth.logout();
     return ctx.redirectRoute('auth.login.show');
-  },
-});
+  }
+}

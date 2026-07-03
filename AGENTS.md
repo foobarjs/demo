@@ -10,8 +10,8 @@ This repository is the runnable ecommerce demo for
 It should showcase realistic business-app usage of the framework:
 
 - model-first ecommerce domain code
-- explicit `adminResource()` configuration
-- explicit `apiResource()` configuration
+- explicit `class extends AdminResource` configuration
+- explicit `class extends ApiResource` configuration
 - schema, migrations, and seeders
 - storage-backed product images and explicit admin upload fields
 - server-rendered storefront pages

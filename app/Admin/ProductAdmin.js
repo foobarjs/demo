@@ -1,10 +1,13 @@
 import { field } from '@foobarjs/framework';
-import { action, adminResource, column, filter, lens } from '@foobarjs/framework/admin';
+import { AdminResource, action, column, filter, lens } from '@foobarjs/framework/admin';
+import Product from '#app/Models/Product.js';
 
-export default adminResource('Product', {
-  label: 'Products',
-  display: 'name',
-  list: [
+export default class ProductAdmin extends AdminResource {
+  static model = Product;
+  static label = 'Products';
+  static display = 'name';
+
+  list = [
     column('imagePath').image({ disk: 'public', directory: 'products' }).label('Image'),
     column('name').searchable().sortable(),
     column('sku').searchable().sortable().label('SKU'),
@@ -12,8 +15,9 @@ export default adminResource('Product', {
     column('price').money('USD').sortable(),
     column('inventory').sortable(),
     column('status').badge({ draft: 'secondary', active: 'success', archived: 'warning' }).sortable(),
-  ],
-  form: [
+  ];
+
+  form = [
     column('category').relationship({ perPage: 25, placeholder: 'Search categories' }),
     column('name').placeholder('Everyday Tote'),
     column('slug').placeholder('everyday-tote'),
@@ -23,12 +27,14 @@ export default adminResource('Product', {
     column('price'),
     column('inventory'),
     column('status'),
-  ],
-  filters: [
+  ];
+
+  filters = [
     filter.relationship('category', { perPage: 25 }).placeholder('Search categories'),
     filter.enum('status'),
-  ],
-  lenses: [
+  ];
+
+  lenses = [
     lens('active', {
       label: 'Active',
       query: query => query.active(),
@@ -43,8 +49,9 @@ export default adminResource('Product', {
         column('status').badge({ draft: 'secondary', active: 'success', archived: 'warning' }),
       ],
     }),
-  ],
-  actions: [
+  ];
+
+  actions = [
     action('archive', ({ record }) => {
       record.update({ status: 'archived' });
     }).row().label('Archive').secondary().confirm('Archive this product?'),
@@ -53,8 +60,9 @@ export default adminResource('Product', {
     }).row().label('Restock').form({
       quantity: field.integer().required().min(1),
     }),
-  ],
-  relationships: [
+  ];
+
+  relationships = [
     { name: 'orderItems', label: 'Order items', perPage: 10 },
-  ],
-});
+  ];
+}

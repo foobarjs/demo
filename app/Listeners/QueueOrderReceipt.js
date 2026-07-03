@@ -1,8 +1,11 @@
-import { listener } from '@foobarjs/framework';
+import { Listener } from '@foobarjs/framework';
+import OrderPlaced from '#app/Events/OrderPlaced.js';
+import SendOrderReceipt from '#app/Jobs/SendOrderReceipt.js';
 
-export default listener('order.placed', {
-  name: 'QueueOrderReceipt',
+export default class QueueOrderReceipt extends Listener {
+  static event = OrderPlaced;
+
   async handle({ queue }, payload) {
-    queue('SendOrderReceipt', payload);
-  },
-});
+    queue(SendOrderReceipt, payload);
+  }
+}

@@ -4,8 +4,8 @@ import { once } from 'node:events';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { buildOpenApi, createServer, hashPassword, loadAppGraph } from '@foobarjs/framework';
-import adminConfig from '../config/admin.js';
-import middlewareConfig from '../config/middleware.js';
+import adminConfig from '#config/admin.js';
+import middlewareConfig from '#config/middleware.js';
 
 const demoRoot = path.dirname(path.dirname(fileURLToPath(import.meta.url)));
 

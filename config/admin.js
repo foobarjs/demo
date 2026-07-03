@@ -11,7 +11,6 @@
  *              Restricts admin access to active users with admin role.
  *   - password: Optional fallback for password mode; unused while provider.type
  *               is set to "model".
- *   - secret: Use app.secret instead (see config/app.js).
  *   - brand: Display name shown in the admin header.
  *   - theme: Optional CSS variable overrides for admin UI customization.
  *

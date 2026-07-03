@@ -1,15 +1,9 @@
-import { policy } from '@foobarjs/framework';
+import { Policy } from '@foobarjs/framework';
+import Category from '#app/Models/Category.js';
 
-/**
- * Category policy defines authorization rules for category API/admin access.
- *
- * Rules:
- *   - viewAny/view: Public reads allowed (no role check).
- *
- * Rationale:
- *   Categories are storefront data; public read access is intentional and safe.
- */
-export default policy('Category', {
-  viewAny: () => true,
-  view: () => true,
-});
+export default class CategoryPolicy extends Policy {
+  static model = Category;
+
+  viewAny() { return true; }
+  view() { return true; }
+}

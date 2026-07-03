@@ -3,7 +3,7 @@
  *
  * Runs once at startup. Use this file to share view data with every template,
  * register view composers, and for smaller apps declare models, routes,
- * controllers, and services inline without separate files.
+ * and controllers inline without separate files.
  *
  * The `app` registrar has the same full surface as a plugin's setup() function.
  */
@@ -17,5 +17,11 @@ export default function (app) {
     checkoutRoutes: {
       store: ctx.route('checkout.store'),
     },
+  }));
+
+  // Prove admin participates in view.share / view.composer.
+  app.view.composer('admin/*', async (data, ctx) => ({
+    viewTag: 'ADMIN-COMPOSER-HIT',
+    adminUserName: ctx?.auth?.user?.()?.email || 'anon',
   }));
 }

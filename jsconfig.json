@@ -1,0 +1,21 @@
+{
+  "compilerOptions": {
+    "baseUrl": ".",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "paths": {
+      "#app/*": ["app/*"],
+      "#config/*": ["config/*"],
+      "#database/*": ["database/*"],
+      "#routes/*": ["routes/*"]
+    }
+  },
+  "include": [
+    "app/**/*.js",
+    "config/**/*.js",
+    "database/**/*.js",
+    "routes/**/*.js",
+    "tests/**/*.js",
+    "index.js"
+  ]
+}

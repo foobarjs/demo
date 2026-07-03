@@ -1,14 +1,18 @@
-import { adminResource, column, filter } from '@foobarjs/framework/admin';
+import { AdminResource, column, filter } from '@foobarjs/framework/admin';
+import Page from '#app/Models/Page.js';
 
-export default adminResource('Page', {
-  label: 'Pages',
-  display: 'title',
-  list: [
+export default class PageAdmin extends AdminResource {
+  static model = Page;
+  static label = 'Pages';
+  static display = 'title';
+
+  list = [
     column('title').searchable().sortable(),
     column('slug').searchable().sortable(),
     column('status').badge({ draft: 'secondary', published: 'success' }).searchable().sortable(),
-  ],
-  filters: [
+  ];
+
+  filters = [
     filter.enum('status'),
-  ],
-});
+  ];
+}

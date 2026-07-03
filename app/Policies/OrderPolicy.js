@@ -1,13 +1,16 @@
-import { policy } from '@foobarjs/framework';
+import { Policy } from '@foobarjs/framework';
+import Order from '#app/Models/Order.js';
 
-export default policy('Order', {
-  viewAny: ({ user }) => user?.role === 'admin',
-  view: ({ user }) => user?.role === 'admin',
-  create: ({ user }) => user?.role === 'admin',
-  update: ({ user }) => user?.role === 'admin',
-  delete: false,
-  'action:markPaid': ({ user }) => user?.role === 'admin',
-  'action:fulfill': ({ user }) => user?.role === 'admin',
-  'action:cancelWithReason': ({ user }) => user?.role === 'admin',
-  'action:cancelSelected': ({ user }) => user?.role === 'admin',
-});
+export default class OrderPolicy extends Policy {
+  static model = Order;
+
+  viewAny({ user }) { return user?.role === 'admin'; }
+  view({ user }) { return user?.role === 'admin'; }
+  create({ user }) { return user?.role === 'admin'; }
+  update({ user }) { return user?.role === 'admin'; }
+  delete() { return false; }
+  ['action:markPaid']({ user }) { return user?.role === 'admin'; }
+  ['action:fulfill']({ user }) { return user?.role === 'admin'; }
+  ['action:cancelWithReason']({ user }) { return user?.role === 'admin'; }
+  ['action:cancelSelected']({ user }) { return user?.role === 'admin'; }
+}

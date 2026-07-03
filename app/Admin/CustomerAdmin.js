@@ -1,25 +1,31 @@
-import { adminResource, column, filter, lens } from '@foobarjs/framework/admin';
+import { AdminResource, column, filter, lens } from '@foobarjs/framework/admin';
+import Customer from '#app/Models/Customer.js';
 
-export default adminResource('Customer', {
-  label: 'Customers',
-  display: 'email',
-  list: [
+export default class CustomerAdmin extends AdminResource {
+  static model = Customer;
+  static label = 'Customers';
+  static display = 'email';
+
+  list = [
     column('email').searchable().sortable(),
     column('firstName').searchable().sortable().label('First name'),
     column('lastName').searchable().sortable().label('Last name'),
     column('status').badge({ lead: 'secondary', active: 'success', vip: 'azure', blocked: 'danger' }).sortable(),
     column('createdAt').date().sortable().label('Joined'),
-  ],
-  filters: [
+  ];
+
+  filters = [
     filter.enum('status'),
-  ],
-  lenses: [
+  ];
+
+  lenses = [
     lens('vip', {
       label: 'VIP',
       query: query => query.vip(),
     }),
-  ],
-  relationships: [
+  ];
+
+  relationships = [
     { name: 'orders', label: 'Orders', perPage: 10 },
-  ],
-});
+  ];
+}

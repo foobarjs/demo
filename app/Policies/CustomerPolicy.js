@@ -1,16 +1,9 @@
-import { policy } from '@foobarjs/framework';
+import { Policy } from '@foobarjs/framework';
+import Customer from '#app/Models/Customer.js';
 
-/**
- * Customer policy defines authorization rules for customer API/admin access.
- *
- * Rules:
- *   - viewAny/view: Admin only (role === 'admin').
- *
- * Rationale:
- *   Customer records contain PII (email, names, order history via relations).
- *   Access restricted to admin users for CRM and support workflows.
- */
-export default policy('Customer', {
-  viewAny: ({ user }) => user?.role === 'admin',
-  view: ({ user }) => user?.role === 'admin',
-});
+export default class CustomerPolicy extends Policy {
+  static model = Customer;
+
+  viewAny({ user }) { return user?.role === 'admin'; }
+  view({ user }) { return user?.role === 'admin'; }
+}
