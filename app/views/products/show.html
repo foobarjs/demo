@@ -1,0 +1,48 @@
+@layout('layouts.app')
+
+@section('title')
+{{ product.name }}
+@end@section
+
+@section('content')
+  <div class="container product-detail" x-data="{
+    product: null,
+    quantity: 1,
+    added: false,
+    async init() {
+      const res = await fetch('/api/products/{{ product.id }}')
+      this.product = await res.json()
+    },
+    async addToCart() {
+      const form = new FormData()
+      form.append('product_id', this.product.id)
+      form.append('quantity', this.quantity)
+      const res = await fetch('/cart', { method: 'POST', body: form })
+      if (res.ok) {
+        this.added = true
+        setTimeout(() => this.added = false, 2000)
+      }
+    }
+  }" x-init="init()">
+    <a href="/products">&larr; Back to products</a>
+
+    <div class="product-layout">
+      <div class="product-image">
+        <span x-text="product?.name?.charAt(0).toUpperCase() || '?'"></span>
+      </div>
+      <div class="product-info">
+        <h1 x-text="product?.name"></h1>
+        <p class="price">$<span x-text="parseFloat(product?.price).toFixed(2)"></span></p>
+        <p class="stock" x-show="product?.stock > 0" x-text="product?.stock + ' in stock'"></p>
+        <p class="stock out" x-show="!product?.stock">Out of stock</p>
+        <p class="description" x-text="product?.description"></p>
+
+        <div class="add-to-cart">
+          <label>Quantity:</label>
+          <input type="number" x-model="quantity" min="1" :max="product?.stock || 1">
+          <button @click="addToCart" class="btn btn-primary" x-text="added ? 'Added!' : 'Add to Cart'"></button>
+        </div>
+      </div>
+    </div>
+  </div>
+@end@section

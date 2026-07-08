@@ -1,0 +1,57 @@
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: system-ui, -apple-system, sans-serif; color: #333; line-height: 1.6; min-height: 100vh; display: flex; flex-direction: column; }
+header { background: #1e293b; color: #fff; padding: 1rem 0; }
+.header-inner { max-width: 1200px; margin: 0 auto; padding: 0 1rem; display: flex; justify-content: space-between; align-items: center; }
+.logo { font-size: 1.5rem; font-weight: 700; color: #fff; text-decoration: none; }
+header nav { display: flex; gap: 1.5rem; }
+header nav a { color: #94a3b8; text-decoration: none; font-size: 0.9rem; }
+header nav a:hover { color: #fff; }
+main { flex: 1; max-width: 1200px; margin: 0 auto; padding: 2rem 1rem; width: 100%; }
+footer { background: #f1f5f9; padding: 2rem; text-align: center; color: #64748b; font-size: 0.9rem; }
+
+.container { max-width: 1200px; }
+h1 { font-size: 2rem; margin-bottom: 1.5rem; color: #1e293b; }
+h2 { font-size: 1.5rem; margin-bottom: 1rem; color: #334155; }
+h3 { font-size: 1.1rem; margin-bottom: 0.5rem; }
+
+.categories { display: flex; gap: 0.5rem; margin-bottom: 2rem; flex-wrap: wrap; }
+.categories button { padding: 0.5rem 1rem; border: 1px solid #e2e8f0; border-radius: 20px; background: #fff; cursor: pointer; font-size: 0.9rem; }
+.categories button:hover, .categories button.active { background: #1e293b; color: #fff; border-color: #1e293b; }
+
+.product-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 1.5rem; }
+.card { border: 1px solid #e2e8f0; border-radius: 8px; padding: 1.5rem; text-align: center; }
+.card:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+.card-image { width: 100%; height: 160px; background: #f8fafc; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 3rem; color: #94a3b8; margin-bottom: 1rem; }
+.price { font-size: 1.25rem; font-weight: 700; color: #3b82f6; margin-bottom: 0.5rem; }
+.stock { font-size: 0.85rem; color: #22c55e; }
+.stock.out { color: #ef4444; }
+.description { color: #64748b; margin: 1rem 0; }
+
+.btn { display: inline-block; padding: 0.5rem 1rem; border-radius: 4px; text-decoration: none; font-size: 0.9rem; background: #f1f5f9; color: #334155; border: 1px solid #e2e8f0; cursor: pointer; }
+.btn-primary { background: #3b82f6; color: #fff; border-color: #3b82f6; }
+.btn-primary:hover { background: #2563eb; }
+.btn-danger { background: #ef4444; color: #fff; border: none; padding: 0.25rem 0.75rem; border-radius: 4px; cursor: pointer; font-size: 0.85rem; }
+
+.empty { text-align: center; padding: 3rem; color: #94a3b8; }
+
+.product-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-top: 1.5rem; }
+.product-image { background: #f8fafc; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 6rem; color: #94a3b8; min-height: 300px; }
+.product-info h1 { font-size: 1.75rem; }
+.add-to-cart { display: flex; gap: 1rem; align-items: center; margin-top: 1.5rem; }
+.add-to-cart input { width: 60px; padding: 0.5rem; border: 1px solid #e2e8f0; border-radius: 4px; text-align: center; }
+
+table { width: 100%; border-collapse: collapse; margin-bottom: 1.5rem; }
+th, td { padding: 0.75rem; text-align: left; border-bottom: 1px solid #e2e8f0; }
+th { background: #f8fafc; font-weight: 600; }
+tfoot td { border-top: 2px solid #e2e8f0; font-weight: 600; }
+
+.cart-actions, .checkout-form { margin-top: 1.5rem; }
+.checkout-form { max-width: 500px; }
+.checkout-form label { display: block; margin-bottom: 0.25rem; font-weight: 500; }
+.checkout-form input, .checkout-form textarea, .checkout-form select { width: 100%; padding: 0.5rem; border: 1px solid #e2e8f0; border-radius: 4px; margin-bottom: 1rem; font-size: 1rem; }
+.checkout-form textarea { min-height: 80px; }
+
+.auth-form { max-width: 400px; margin: 0 auto; }
+.auth-form label { display: block; margin-bottom: 0.25rem; font-weight: 500; }
+.auth-form input { width: 100%; padding: 0.5rem; border: 1px solid #e2e8f0; border-radius: 4px; margin-bottom: 1rem; }
+.auth-form .btn { width: 100%; }

@@ -1,0 +1,61 @@
+@layout('layouts.app')
+
+@section('title')
+Shopping Cart
+@end@section
+
+@section('content')
+  <div class="container">
+    <h1>Shopping Cart</h1>
+
+    @if(!cart || !cart.length)
+      <div class="empty">
+        <p>Your cart is empty.</p>
+        <a href="/products" class="btn">Browse Products</a>
+      </div>
+    @else
+      <table>
+        <thead>
+          <tr>
+            <th>Product</th>
+            <th>Price</th>
+            <th>Quantity</th>
+            <th>Subtotal</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for(item of cart)
+            <tr>
+              <td><a href="/products/{{ item.id }}">{{ item.name }}</a></td>
+              <td>${{ parseFloat(item.price).toFixed(2) }}</td>
+              <td>
+                <form action="/cart/{{ item.id }}" method="post" style="display:flex;gap:0.5rem;align-items:center">
+                  <input type="hidden" name="_method" value="PUT">
+                  <input type="number" name="quantity" value="{{ item.quantity }}" min="1" style="width:60px">
+                  <button type="submit" class="btn" style="padding:0.25rem 0.5rem;font-size:0.8rem">Update</button>
+                </form>
+              </td>
+              <td>${{ (parseFloat(item.price) * item.quantity).toFixed(2) }}</td>
+              <td>
+                <form action="/cart/{{ item.id }}?_method=DELETE" method="post" style="display:inline">
+                  <button type="submit" class="btn-danger">Remove</button>
+                </form>
+              </td>
+            </tr>
+          @end
+        </tbody>
+        <tfoot>
+          <tr>
+            <td colspan="3"><strong>Total</strong></td>
+            <td><strong>${{ cart.reduce((sum, i) => sum + parseFloat(i.price) * i.quantity, 0).toFixed(2) }}</strong></td>
+            <td></td>
+          </tr>
+        </tfoot>
+      </table>
+      <div class="cart-actions">
+        <a href="/checkout" class="btn btn-primary">Proceed to Checkout</a>
+      </div>
+    @endif
+  </div>
+@end@section

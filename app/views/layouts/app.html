@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>@yield('title') - Foobar Shop</title>
+  <link rel="stylesheet" href="/css/app.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+</head>
+<body>
+  <header>
+    <div class="header-inner">
+      <a href="/" class="logo">Foobar Shop</a>
+      <nav>
+        <a href="/">Home</a>
+        <a href="/products">Products</a>
+        <a href="/cart">Cart ({{ cartCount }})</a>
+        <a href="/checkout">Checkout</a>
+        @if(loggedIn)
+          <form action="/logout" method="post" style="display:inline">
+            <button type="submit" style="background:none;border:none;color:#94a3b8;cursor:pointer;font-size:0.9rem;font-family:inherit">Logout</button>
+          </form>
+        @else
+          <a href="/login">Login</a>
+        @endif
+        <a href="/admin">Admin</a>
+      </nav>
+    </div>
+  </header>
+  <main>
+    @if(flash.success)
+      <div class="alert alert-success">{{ flash.success }}</div>
+    @endif
+    @if(flash.error)
+      <div class="alert alert-danger">{{ flash.error }}</div>
+    @endif
+    @yield('content')
+  </main>
+  <footer>
+    <p>&copy; 2026 Foobar Shop. Built with foobarjs.</p>
+  </footer>
+</body>
+</html>

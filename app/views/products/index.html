@@ -1,0 +1,50 @@
+@layout('layouts.app')
+
+@section('title')
+Shop
+@end@section
+
+@section('content')
+  <div class="container" x-data="{
+    products: [],
+    categories: [],
+    async init() {
+      const res = await fetch('/api/products')
+      this.products = await res.json()
+      const catRes = await fetch('/api/categories')
+      this.categories = await catRes.json()
+    },
+    filterByCategory(catId) {
+      if (!catId) return this.products
+      return this.products.filter(p => p.category == catId)
+    }
+  }" x-init="init()">
+    <h1>Products</h1>
+
+    <div class="categories">
+      <button @click="category = null" :class="{ active: !category }">All</button>
+      <template x-for="cat in categories" :key="cat.id">
+        <button @click="category = cat.id" :class="{ active: category == cat.id }" x-text="cat.name"></button>
+      </template>
+    </div>
+
+    <div class="product-grid">
+      <template x-for="product in filterByCategory(category)" :key="product.id">
+        <div class="card">
+          <div class="card-image">
+            <span x-text="product.name.charAt(0).toUpperCase()"></span>
+          </div>
+          <h3 x-text="product.name"></h3>
+          <p class="price">$<span x-text="parseFloat(product.price).toFixed(2)"></span></p>
+          <p class="stock" x-show="product.stock > 0" x-text="product.stock + ' in stock'"></p>
+          <p class="stock out" x-show="!product.stock">Out of stock</p>
+          <a :href="'/products/' + product.id" class="btn">View Details</a>
+        </div>
+      </template>
+    </div>
+
+    <div x-show="!products.length" class="empty">
+      <p>No products yet. Check back soon!</p>
+    </div>
+  </div>
+@end@section
