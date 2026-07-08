@@ -1,26 +1,27 @@
+import { Controller } from 'foobarjs/core'
 import Product from '../models/product.model.js'
 
-class CartController {
-  async index(c) {
-    const cart = c.get('session')?.get('cart') || []
-    return c.render('cart/index', { cart, title: 'Cart' })
+class CartController extends Controller {
+  async index() {
+    const cart = this.c.get('session')?.get('cart') || []
+    return this.render('cart/index', { cart, title: 'Cart' })
   }
 
-  async store(c) {
-    const body = await c.req.parseBody()
+  async store() {
+    const body = await this.body()
     const productId = parseInt(body.product_id)
     const quantity = parseInt(body.quantity) || 1
 
     if (!productId) {
-      return c.json({ error: 'Product ID is required' }, 422)
+      return this.json({ error: 'Product ID is required' }, 422)
     }
 
     const product = await Product.find(productId)
     if (!product) {
-      return c.json({ error: 'Product not found' }, 404)
+      return this.json({ error: 'Product not found' }, 404)
     }
 
-    const session = c.get('session')
+    const session = this.c.get('session')
     const cart = session.get('cart') || []
     const existing = cart.find(i => i.id === productId)
 
@@ -39,41 +40,41 @@ class CartController {
     session.set('cart', cart)
     session.flash('success', `Added ${product.name} to cart`)
 
-    const referer = c.req.header('Referer') || '/cart'
-    if (c.req.header('Accept')?.includes('json')) {
-      return c.json({ cart, count: cart.reduce((s, i) => s + i.quantity, 0) })
+    const referer = this.c.req.header('Referer') || '/cart'
+    if (this.c.req.header('Accept')?.includes('json')) {
+      return this.json({ cart, count: cart.reduce((s, i) => s + i.quantity, 0) })
     }
-    return c.redirect(referer)
+    return this.redirect(referer)
   }
 
-  async update(c) {
-    const id = parseInt(c.req.param('id'))
-    const body = await c.req.parseBody()
+  async update() {
+    const id = parseInt(this.c.req.param('id'))
+    const body = await this.body()
     const quantity = parseInt(body.quantity)
 
     if (!quantity || quantity < 1) {
-      return c.json({ error: 'Quantity must be at least 1' }, 422)
+      return this.json({ error: 'Quantity must be at least 1' }, 422)
     }
 
-    const session = c.get('session')
+    const session = this.c.get('session')
     const cart = session.get('cart') || []
     const item = cart.find(i => i.id === id)
 
     if (!item) {
-      return c.json({ error: 'Item not found in cart' }, 404)
+      return this.json({ error: 'Item not found in cart' }, 404)
     }
 
     item.quantity = quantity
     session.set('cart', cart)
-    return c.redirect('/cart')
+    return this.redirect('/cart')
   }
 
-  async destroy(c) {
-    const id = parseInt(c.req.param('id'))
-    const session = c.get('session')
+  async destroy() {
+    const id = parseInt(this.c.req.param('id'))
+    const session = this.c.get('session')
     const cart = (session.get('cart') || []).filter(i => i.id !== id)
     session.set('cart', cart)
-    return c.redirect('/cart')
+    return this.redirect('/cart')
   }
 }
 

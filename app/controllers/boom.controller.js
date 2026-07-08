@@ -1,8 +1,8 @@
-import { HttpException, NotFoundError, ForbiddenError } from 'foobarjs/core'
+import { Controller, HttpException, NotFoundError, ForbiddenError } from 'foobarjs/core'
 
-class BoomController {
-  async index(c) {
-    const kind = c.req.query('kind') || 'generic'
+class BoomController extends Controller {
+  async index() {
+    const kind = this.c.req.query('kind') || 'generic'
     if (kind === 'generic') {
       throw new Error('kaboom')
     }
@@ -17,7 +17,7 @@ class BoomController {
     }
     if (kind === 'reflected') {
       // For XSS-escape testing
-      throw new Error(String(c.req.query('msg') || ''))
+      throw new Error(String(this.c.req.query('msg') || ''))
     }
     return { ok: true }
   }

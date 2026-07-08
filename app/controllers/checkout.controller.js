@@ -1,3 +1,4 @@
+import { Controller } from 'foobarjs/core'
 import Order from '../models/order.model.js'
 import OrderItem from '../models/order_item.model.js'
 import OrderPlaced from '../events/order-placed.event.js'
@@ -5,22 +6,22 @@ import CheckoutValidator from '../validators/checkout.validator.js'
 import { Event } from 'foobarjs/events'
 import { Model } from 'foobarjs/orm'
 
-class CheckoutController {
-  async index(c) {
-    const cart = c.get('session')?.get('cart') || []
-    return c.render('checkout/index', { cart, title: 'Checkout' })
+class CheckoutController extends Controller {
+  async index() {
+    const cart = this.c.get('session')?.get('cart') || []
+    return this.render('checkout/index', { cart, title: 'Checkout' })
   }
 
-  async store(c) {
-    const request = await c.validate(CheckoutValidator)
-    const session = c.get('session')
+  async store() {
+    const request = await this.validate(CheckoutValidator)
+    const session = this.c.get('session')
     const cart = session?.get('cart') || []
 
     if (!cart.length) {
-      return c.json({ error: 'Cart is empty' }, 422)
+      return this.json({ error: 'Cart is empty' }, 422)
     }
 
-    const user = c.get('user')
+    const user = this.getLoggedInUser()
     const total = cart.reduce((sum, item) => sum + parseFloat(item.price) * item.quantity, 0)
     const body = request.validated()
 
@@ -48,7 +49,7 @@ class CheckoutController {
     })
 
     session.set('cart', [])
-    return c.redirect('/')
+    return this.redirect('/')
   }
 }
 

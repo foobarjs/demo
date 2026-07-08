@@ -1,15 +1,15 @@
+import { Controller } from 'foobarjs/core'
 import Product from '../models/product.model.js'
-import Category from '../models/category.model.js'
 
-class ProductsController {
-  async index(c) {
+class ProductsController extends Controller {
+  async index() {
     return Product.all()
   }
 
-  async show(c) {
-    const id = c.req.param('id')
+  async show() {
+    const id = this.c.req.param('id')
     const product = await Product.find(parseInt(id))
-    if (!product) return c.json({ error: 'Not found' }, 404)
+    if (!product) return this.json({ error: 'Not found' }, 404)
     return product
   }
 }

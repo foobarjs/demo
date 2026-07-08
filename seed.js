@@ -1,10 +1,6 @@
-import { fileURLToPath } from 'node:url'
-import { Db } from 'foobarjs/orm'
 import User from './app/models/user.model.js'
 import Category from './app/models/category.model.js'
 import Product from './app/models/product.model.js'
-import Order from './app/models/order.model.js'
-import OrderItem from './app/models/order_item.model.js'
 
 export default async function seed() {
   const existingUser = await User.where('email', 'admin@foobar.com').first()
@@ -60,15 +56,4 @@ export default async function seed() {
   }
 
   console.log(`Seeded ${createdCategories.length} categories and ${productCount || products.length} products`)
-}
-
-const __filename = fileURLToPath(import.meta.url)
-if (process.argv[1] === __filename) {
-  const modelClasses = [User, Category, Product, Order, OrderItem]
-  const config = {
-    database: { database: 'foobar.db', directory: new URL('./db', import.meta.url).pathname }
-  }
-  await Db.boot(config, modelClasses, new URL('.', import.meta.url).pathname)
-  await seed()
-  await Db.close()
 }
