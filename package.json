@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "foobar serve --watch",
+    "dev": "foobar serve --dev",
     "start": "foobar serve",
     "test": "foobar test",
     "db:migrate": "foobar db migrate",
