@@ -71,9 +71,13 @@ describe('API', () => {
     assert.ok(data.name)
   })
 
-  test('GET /api/products/99999 returns 404', async ({ request }) => {
+  test('GET /api/products/99999 returns the canonical 404 error envelope', async ({ request }) => {
     const res = await request.get('/api/products/99999')
     assert.strictEqual(res.status, 404)
+    const body = await res.json()
+    assert.strictEqual(body.status, 404)
+    assert.ok(body.error, 'carries an error message')
+    assert.ok(body.requestId, 'carries a requestId (same as the X-Request-Id header)')
   })
 
   test('GET /api/categories returns 200', async ({ request }) => {
