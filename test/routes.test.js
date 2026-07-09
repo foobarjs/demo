@@ -85,6 +85,25 @@ describe('API', () => {
       .form({ name: 'Nope', slug: `nope-${Date.now()}`, price: '1' })
     assert.strictEqual(res.status, 401)
   })
+
+  test('GET /api/products?page= returns a { data, meta } envelope', async ({ request }) => {
+    const res = await request.get('/api/products?page=1&perPage=2')
+    assert.strictEqual(res.status, 200)
+    const body = await res.json()
+    assert.ok(Array.isArray(body.data), 'data should be an array')
+    assert.ok(body.data.length <= 2, 'perPage should cap the page size')
+    assert.strictEqual(body.meta.currentPage, 1)
+    assert.strictEqual(body.meta.perPage, 2)
+    assert.strictEqual(typeof body.meta.total, 'number')
+  })
+
+  test('GET /api/products?filter[published]=true narrows to published rows', async ({ request }) => {
+    const res = await request.get('/api/products?filter[published]=true')
+    assert.strictEqual(res.status, 200)
+    const data = await res.json()
+    assert.ok(Array.isArray(data))
+    assert.ok(data.every(p => p.published === true), 'every returned product should be published')
+  })
 })
 
 describe('404 Handler', () => {
