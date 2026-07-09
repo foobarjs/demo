@@ -78,6 +78,13 @@ describe('API', () => {
     const res = await request.get('/api/categories')
     assert.strictEqual(res.status, 200)
   })
+
+  test('POST /api/products requires authentication (write gate)', async ({ request }) => {
+    const res = await request
+      .post('/api/products')
+      .form({ name: 'Nope', slug: `nope-${Date.now()}`, price: '1' })
+    assert.strictEqual(res.status, 401)
+  })
 })
 
 describe('404 Handler', () => {

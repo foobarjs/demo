@@ -6,7 +6,7 @@ export default Admin.resource(Product)
   .icon('bi-box-seam')
   .group('Catalog')
   .displayLabel(p => p.name)
-  .dashboard(true)
+  .dashboard({})
   .permissions({
     view: ['admin', 'editor', 'viewer'],
     create: ['admin', 'editor'],

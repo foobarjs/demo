@@ -5,13 +5,14 @@ import Product from './app/models/product.model.js'
 export default async function seed() {
   const existingUser = await User.where('email', 'admin@foobar.com').first()
   if (!existingUser) {
-    await User.create({
+    const admin = await User.create({
       name: 'Admin',
       email: 'admin@foobar.com',
       password: 'aaaaaaaa',
-      isAdmin: true,
-      roles: ['admin'],
     })
+    // isAdmin / roles are guarded against mass assignment; set them explicitly.
+    admin.forceFill({ isAdmin: true, roles: ['admin'] })
+    await admin.save()
     console.log('Created admin user: admin@foobar.com / aaaaaaaa')
   }
 

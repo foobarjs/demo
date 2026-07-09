@@ -13,6 +13,11 @@ class User extends AuthenticableModel {
 
   static timestamps = true
 
+  // Privilege and structural fields are never mass-assignable (e.g. via the
+  // auto API or admin forms). Set them explicitly with forceFill() in trusted
+  // server-side code.
+  static guarded = ['id', 'isAdmin', 'roles', 'created_at', 'updated_at']
+
   static scopes() {
     return {
       admins: (qb) => qb.where('isAdmin', true),

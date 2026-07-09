@@ -13,8 +13,9 @@ describe('API Token Authentication', () => {
       name: 'API User',
       email: `api-${timestamp}@example.com`,
       password: 'secret123',
-      isAdmin: true,
     })
+    user.forceFill({ isAdmin: true })
+    await user.save()
 
     const { plainTextToken } = await PersonalAccessToken.createFor(user, 'test-token')
 
@@ -42,8 +43,9 @@ describe('API Token Authentication', () => {
       name: 'Expired API User',
       email: `expired-${timestamp}@example.com`,
       password: 'secret123',
-      isAdmin: true,
     })
+    user.forceFill({ isAdmin: true })
+    await user.save()
 
     const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000)
     const { plainTextToken } = await PersonalAccessToken.createFor(user, 'expired-token', ['*'], yesterday)

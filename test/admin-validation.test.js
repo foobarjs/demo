@@ -13,9 +13,9 @@ before(async () => {
     name: 'Admin Validation User',
     email: `admin-val-${s}@example.com`,
     password: 'secret123',
-    isAdmin: true,
-    roles: ['admin'],
   })
+  _adminUser.forceFill({ isAdmin: true, roles: ['admin'] })
+  await _adminUser.save()
   const created = await PersonalAccessToken.createFor(_adminUser, `admin-val-token-${s}`)
   _adminToken = created.plainTextToken
 })

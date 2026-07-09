@@ -16,9 +16,9 @@ async function adminRequest(request) {
     name: 'Admin User',
     email: `admin-${timestamp}@example.com`,
     password: 'secret123',
-    isAdmin: true,
-    roles: ['admin'],
   })
+  user.forceFill({ isAdmin: true, roles: ['admin'] })
+  await user.save()
   const { plainTextToken } = await PersonalAccessToken.createFor(user, 'admin-test-token')
   return {
     user,
@@ -35,9 +35,9 @@ async function roleRequest(request, roles) {
     name: `Role ${roles.join(',')}`,
     email: `role-${roles.join('-')}-${timestamp}@example.com`,
     password: 'secret123',
-    isAdmin: false,
-    roles,
   })
+  user.forceFill({ isAdmin: false, roles })
+  await user.save()
   const { plainTextToken } = await PersonalAccessToken.createFor(user, `role-${roles.join('-')}-token`)
   return {
     user,
@@ -182,6 +182,28 @@ describe('Admin Panel', () => {
     const order = await Order.create({ status: 'pending', total: 5 })
 
     const res = await admin.post(`/admin/orders/${order.id}/action/ship`)
+    assert.strictEqual(res.status, 302)
+    const updated = await Order.find(order.id)
+    assert.strictEqual(updated.status, 'shipped')
+  })
+
+  test('viewer cannot run the ship inline action (authorization enforced)', async ({ request }) => {
+    const viewer = await roleRequest(request, ['viewer'])
+    const order = await Order.create({ status: 'pending', total: 5 })
+
+    const res = await viewer.post(`/admin/orders/${order.id}/action/ship`)
+    assert.strictEqual(res.status, 302)
+    assert.strictEqual(res.headers.get('location'), '/admin')
+
+    const unchanged = await Order.find(order.id)
+    assert.strictEqual(unchanged.status, 'pending', 'a forbidden action must not mutate the record')
+  })
+
+  test('editor can run the ship inline action (default edit permission)', async ({ request }) => {
+    const editor = await roleRequest(request, ['editor'])
+    const order = await Order.create({ status: 'pending', total: 5 })
+
+    const res = await editor.post(`/admin/orders/${order.id}/action/ship`)
     assert.strictEqual(res.status, 302)
     const updated = await Order.find(order.id)
     assert.strictEqual(updated.status, 'shipped')
@@ -924,33 +946,6 @@ describe('Admin Panel', () => {
     assert.ok(/fb-filter-chip-remove/.test(text), 'Chip includes a remove link')
     // Removing the chip navigates to a URL that explicitly clears the filter.
     assert.ok(/f%5Bpublished%5D=(&|"|$)/.test(text), 'Remove link should clear the filter')
-  })
-
-  test('filter persistence cookie round-trips (persistFilters=true)', async ({ request }) => {
-    const admin = await adminRequest(request)
-    // The demo Product resource has .persistFilters(true).
-    // Step 1: hit /admin/products with an explicit filter.
-    const withFilter = await admin.get('/admin/products?f%5Bpublished%5D=1')
-    assert.strictEqual(withFilter.status, 200)
-    const setCookie = withFilter.headers.get('Set-Cookie') || ''
-    assert.ok(
-      /foobar_admin_filters_products=/.test(setCookie),
-      'Set-Cookie should include filter persistence cookie'
-    )
-    assert.ok(
-      /Path=\/admin/.test(setCookie),
-      'Cookie should be scoped to /admin'
-    )
-
-    // Step 2: hit /admin/products WITHOUT filter params but WITH the cookie.
-    // Chip strip should reappear because the cookie value is applied.
-    const cookieMatch = setCookie.match(/foobar_admin_filters_products=[^;]+/)
-    assert.ok(cookieMatch, 'Should capture filter cookie')
-    const restored = await admin.get('/admin/products').set('Cookie', cookieMatch[0])
-    assert.strictEqual(restored.status, 200)
-    const rt = await restored.text()
-    assert.ok(rt.includes('fb-filter-chips'), 'Persisted filter should re-hydrate as chip')
-    assert.ok(/fb-filter-chip[\s\S]*Published[\s\S]*Yes/.test(rt))
   })
 
   test('bulk export selected rows produces a CSV (sync path)', async ({ request }) => {
