@@ -171,6 +171,7 @@ describe('Admin Panel', () => {
     const res = await admin.post('/admin/orders/bulk').form({
       action: 'delete',
       ids: [String(order.id)],
+      confirmed: '1',
     })
     assert.strictEqual(res.status, 302)
     const deleted = await Order.find(order.id)
@@ -411,10 +412,14 @@ describe('Admin Panel', () => {
 
   test('search filters list results', async ({ request }) => {
     const admin = await adminRequest(request)
-    const product = await Product.query().first()
-    assert.ok(product)
+    const ts = Date.now()
+    const product = await Product.create({
+      name: `SearchHit ${ts}`,
+      slug: `search-hit-${ts}`,
+      price: 1,
+    })
 
-    const q = product.name.slice(0, 6)
+    const q = `SearchHit ${ts}`
     const res = await admin.get(`/admin/products?q=${encodeURIComponent(q)}`)
     assert.strictEqual(res.status, 200)
     const text = await res.text()
