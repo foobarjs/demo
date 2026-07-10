@@ -944,8 +944,12 @@ describe('Admin Panel', () => {
     // Chip includes label + display value + remove link.
     assert.ok(/fb-filter-chip[\s\S]*Published[\s\S]*Yes/.test(text), 'Chip label + value')
     assert.ok(/fb-filter-chip-remove/.test(text), 'Chip includes a remove link')
-    // Removing the chip navigates to a URL that explicitly clears the filter.
-    assert.ok(/f%5Bpublished%5D=(&|"|$)/.test(text), 'Remove link should clear the filter')
+    // The chip remove link drops the filter key entirely (no blank f[published]=).
+    // When it's the last filter, f_reset=1 is added to clear the persist cookie.
+    const chipMatch = text.match(/href="([^"]*)"[^>]*class="fb-filter-chip-remove"/)
+    assert.ok(chipMatch, 'Chip remove link exists')
+    assert.ok(!chipMatch[1].includes('f%5Bpublished%5D='), 'Remove link should drop the filter key, not blank it')
+    assert.ok(chipMatch[1].includes('f_reset=1'), 'Remove link includes f_reset when it is the last filter')
   })
 
   test('bulk export selected rows produces a CSV (sync path)', async ({ request }) => {
