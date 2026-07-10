@@ -1,4 +1,5 @@
 import { Controller } from 'foobarjs/core'
+import { ValidationError } from 'foobarjs/orm'
 import Order from '../models/order.model.js'
 import OrderItem from '../models/order_item.model.js'
 import OrderPlaced from '../events/order-placed.event.js'
@@ -13,7 +14,18 @@ class CheckoutController extends Controller {
   }
 
   async store() {
-    const request = await this.validate(CheckoutValidator)
+    let request
+    try {
+      request = await this.validate(CheckoutValidator)
+    } catch (err) {
+      if (err.name === 'ValidationError') {
+        if (this.wantsJson()) {
+          return this.json({ errors: err.errors, message: err.message }, 422)
+        }
+        return this.back().withErrors(err).withInput(err.input)
+      }
+      throw err
+    }
     const session = this.c.get('session')
     const cart = session?.get('cart') || []
 
