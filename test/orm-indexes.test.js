@@ -1,5 +1,5 @@
 import { test, describe, assert, before, boot } from 'foobarjs/test'
-import { getEM } from 'foobarjs/orm'
+import { _getEM } from 'foobarjs/orm'
 import Product from '../app/models/product.model.js'
 import Order from '../app/models/order.model.js'
 import User from '../app/models/user.model.js'
@@ -10,7 +10,7 @@ before(async () => {
 })
 
 async function sqliteIndexes() {
-  const em = getEM()
+  const em = _getEM()
   const conn = em.getConnection()
   const rows = await conn.execute(
     `SELECT name, tbl_name, sql FROM sqlite_master WHERE type='index' AND sql IS NOT NULL`
@@ -19,7 +19,7 @@ async function sqliteIndexes() {
 }
 
 async function sqliteTableSql(table) {
-  const em = getEM()
+  const em = _getEM()
   const conn = em.getConnection()
   const rows = await conn.execute(
     `SELECT sql FROM sqlite_master WHERE type='table' AND name=?`,
@@ -123,7 +123,7 @@ describe('ORM Indexes: Query planner uses indexes', () => {
   })
 
   test('WHERE on FK column uses idx_orders_user_id', async () => {
-    const em = getEM()
+    const em = _getEM()
     const conn = em.getConnection()
     const plan = await conn.execute('EXPLAIN QUERY PLAN SELECT * FROM orders WHERE user_id = ?', [1])
     const detail = plan.map(p => p.detail).join(' | ')
@@ -134,7 +134,7 @@ describe('ORM Indexes: Query planner uses indexes', () => {
   })
 
   test('WHERE on status column uses idx_orders_status', async () => {
-    const em = getEM()
+    const em = _getEM()
     const conn = em.getConnection()
     const plan = await conn.execute('EXPLAIN QUERY PLAN SELECT * FROM orders WHERE status = ?', ['pending'])
     const detail = plan.map(p => p.detail).join(' | ')

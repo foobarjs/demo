@@ -2,6 +2,9 @@ import { Controller, HttpException, NotFoundError, ForbiddenError } from 'foobar
 
 class BoomController extends Controller {
   async index() {
+    if (process.env.NODE_ENV === 'production') {
+      throw new NotFoundError('Not found')
+    }
     const kind = this.c.req.query('kind') || 'generic'
     if (kind === 'generic') {
       throw new Error('kaboom')
