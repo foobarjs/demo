@@ -9,7 +9,7 @@ export default {
   secret: process.env.APP_SECRET,
   log: {
     level: process.env.LOG_LEVEL || 'info',
-    file: process.env.LOG_FILE || null,
+    file: process.env.LOG_FILE || 'storage/logs/app.log',
   },
   plugins: ['foobarjs/auth', 'foobarjs/admin', 'foobarjs/api', 'foobarjs/api-docs', 'foobarjs/queue', 'foobarjs/cache', 'foobarjs/notifications'],
 }

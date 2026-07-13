@@ -3,6 +3,7 @@ import { Model, Field } from 'foobarjs/orm'
 const calls = []
 
 class Hooked extends Model {
+  static admin = false
   static schema = {
     name: Field.string().required(),
     value: Field.string().nullable(),

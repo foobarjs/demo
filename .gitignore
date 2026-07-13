@@ -12,6 +12,9 @@ database/:memory:
 public/uploads/*
 !public/uploads/.gitkeep
 
+# logs
+storage/logs/
+
 # test artifacts
 test-results/
 

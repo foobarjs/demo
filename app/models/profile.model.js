@@ -2,6 +2,7 @@ import { Model, Field } from 'foobarjs/orm'
 import User from './user.model.js'
 
 class Profile extends Model {
+  static admin = false
   static schema = {
     bio: Field.text().nullable(),
     avatar: Field.string().nullable(),
