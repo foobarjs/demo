@@ -16,7 +16,6 @@ export default Admin.resource(Product)
   .searchable('name', 'slug', 'description')
   .list(list => list
     .autoFilters(true)
-    .persistFilters(true)
     .columns([
       Column.text('name').sortable().searchable(),
       Column.belongsTo('category'),

@@ -1,5 +1,7 @@
 # foobarjs demo
 
+> **Experimental — not production ready.** This demo accompanies foobarjs v0.2.0, which is under active development. APIs and conventions may change between releases.
+
 Reference application for [foobarjs](https://github.com/foobarjs/foobarjs).
 
 Exercises every subsystem: ORM (models, relations, aggregates, hooks,
