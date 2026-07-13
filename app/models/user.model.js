@@ -16,7 +16,7 @@ class User extends AuthenticableModel {
   // Privilege and structural fields are never mass-assignable (e.g. via the
   // auto API or admin forms). Set them explicitly with forceFill() in trusted
   // server-side code.
-  static guarded = ['id', 'isAdmin', 'roles', 'created_at', 'updated_at']
+  static guarded = ['id', 'isAdmin', 'roles', 'createdAt', 'updatedAt']
 
   static scopes() {
     return {

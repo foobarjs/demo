@@ -5,7 +5,7 @@ import Category from '../models/category.model.js'
 class HomeController extends Controller {
   async index() {
     const [featured, categories] = await Promise.all([
-      Product.where('published', true).orderBy('created_at', 'desc').limit(4).get(),
+      Product.where('published', true).orderBy('createdAt', 'desc').limit(4).get(),
       Category.all(),
     ])
     return this.render('home/index', { featured, categories })

@@ -14,7 +14,7 @@ export default Admin.resource(Order)
     delete: ['admin'],
   })
   .searchable('status', 'shippingAddress')
-  .defaultSort('created_at', 'desc')
+  .defaultSort('createdAt', 'desc')
   .list(list => list
     .autoFilters(true)
     .columns([
@@ -53,7 +53,7 @@ export default Admin.resource(Order)
     ])
   )
   .detail(detail => detail
-    .fields(['id', 'user', 'status', 'total', 'paidAt', 'shippingAddress', 'created_at'])
+    .fields(['id', 'user', 'status', 'total', 'paidAt', 'shippingAddress', 'createdAt'])
     .sections([
       Section.make('Overview').fields(['id', 'user', 'status']).columns(2),
       Section.make('Payment').fields(['total', 'paidAt']).columns(2).icon('bi-cash-coin'),

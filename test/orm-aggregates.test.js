@@ -202,13 +202,13 @@ describe('ORM Multi-column OrderBy', () => {
     assert.strictEqual(items[2].id, ids[2])
   })
 
-  test('latest() sorts by created_at desc', async () => {
-    const items = await Product.query().whereIn('id', ids).latest('created_at').get()
+  test('latest() sorts by createdAt desc', async () => {
+    const items = await Product.query().whereIn('id', ids).latest('createdAt').get()
     assert.strictEqual(items.length, 3)
   })
 
-  test('oldest() sorts by created_at asc', async () => {
-    const items = await Product.query().whereIn('id', ids).oldest('created_at').get()
+  test('oldest() sorts by createdAt asc', async () => {
+    const items = await Product.query().whereIn('id', ids).oldest('createdAt').get()
     assert.strictEqual(items.length, 3)
   })
 
@@ -273,7 +273,7 @@ describe('ORM GroupBy and HAVING', () => {
 describe('ORM Date Bucketing', () => {
   test('groupByDay returns per-day buckets', async () => {
     const rows = await Product.query()
-      .groupByDay('created_at')
+      .groupByDay('createdAt')
       .selectCount('*', 'cnt')
       .get()
     assert.ok(Array.isArray(rows))
@@ -286,7 +286,7 @@ describe('ORM Date Bucketing', () => {
 
   test('groupByMonth returns per-month buckets', async () => {
     const rows = await Product.query()
-      .groupByMonth('created_at')
+      .groupByMonth('createdAt')
       .selectCount('*', 'cnt')
       .get()
     assert.ok(Array.isArray(rows))
@@ -297,7 +297,7 @@ describe('ORM Date Bucketing', () => {
 
   test('groupByYear returns per-year buckets', async () => {
     const rows = await Product.query()
-      .groupByYear('created_at')
+      .groupByYear('createdAt')
       .selectCount('*', 'cnt')
       .get()
     assert.ok(Array.isArray(rows))
@@ -306,7 +306,7 @@ describe('ORM Date Bucketing', () => {
 
   test('groupByDay with sum on price', async () => {
     const rows = await Product.query()
-      .groupByDay('created_at')
+      .groupByDay('createdAt')
       .selectSum('price', 'total')
       .get()
     for (const row of rows) {
