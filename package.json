@@ -13,6 +13,6 @@
     "db:reset": "foobar db reset"
   },
   "dependencies": {
-    "foobarjs": "github:foobarjs/foobarjs#v0.1.0"
+    "foobarjs": "file:../framework"
   }
 }

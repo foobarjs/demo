@@ -1,6 +1,6 @@
-import User from './app/models/user.model.js'
-import Category from './app/models/category.model.js'
-import Product from './app/models/product.model.js'
+import User from '../../app/models/user.model.js'
+import Category from '../../app/models/category.model.js'
+import Product from '../../app/models/product.model.js'
 
 export default async function seed() {
   const existingUser = await User.where('email', 'admin@foobar.com').first()

@@ -4,9 +4,9 @@ node_modules/
 .env.*.local
 
 # databases (dev/test artifacts)
-db/*.db
-db/*.db-journal
-db/:memory:
+database/*.db
+database/*.db-journal
+database/:memory:
 
 # uploads
 public/uploads/*

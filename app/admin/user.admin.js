@@ -1,4 +1,4 @@
-import { Admin, Action } from 'foobarjs/admin'
+import { Admin, Action, Field } from 'foobarjs/admin'
 import User from '../models/user.model.js'
 
 export default Admin.resource(User)
@@ -11,7 +11,8 @@ export default Admin.resource(User)
         .icon('bi-key')
         .confirm('Set a new password for this user.')
         .form([
-          { name: 'password', label: 'New Password', type: 'password', required: true },
+          Field.password('password').label('New Password').required()
+            .helpText('Minimum 8 characters'),
         ])
         .handler(async (user, { formData }) => {
           if (!formData.password || formData.password.length < 8) {

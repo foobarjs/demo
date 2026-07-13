@@ -5,44 +5,61 @@
 @end@section
 
 @section('content')
-  <div class="container product-detail" x-data="{
-    product: null,
-    quantity: 1,
-    added: false,
-    async init() {
-      const res = await fetch('/api/products/{{ product.id }}')
-      this.product = await res.json()
-    },
-    async addToCart() {
-      const form = new FormData()
-      form.append('product_id', this.product.id)
-      form.append('quantity', this.quantity)
-      const res = await fetch('/cart', { method: 'POST', body: form })
-      if (res.ok) {
-        this.added = true
-        setTimeout(() => this.added = false, 2000)
-      }
-    }
-  }" x-init="init()">
-    <a href="/products">&larr; Back to products</a>
+  <div class="container">
+    <a href="/products" class="back-link">&larr; Back to products</a>
 
     <div class="product-layout">
-      <div class="product-image">
-        <span x-text="product?.name?.charAt(0).toUpperCase() || '?'"></span>
-      </div>
+      <div class="product-image">{{ product.name.charAt(0) }}</div>
       <div class="product-info">
-        <h1 x-text="product?.name"></h1>
-        <p class="price">$<span x-text="parseFloat(product?.price).toFixed(2)"></span></p>
-        <p class="stock" x-show="product?.stock > 0" x-text="product?.stock + ' in stock'"></p>
-        <p class="stock out" x-show="!product?.stock">Out of stock</p>
-        <p class="description" x-text="product?.description"></p>
+        <h1>{{ product.name }}</h1>
+        <p class="price price-lg">${{ parseFloat(product.price).toFixed(2) }}</p>
 
-        <div class="add-to-cart">
-          <label>Quantity:</label>
-          <input type="number" x-model="quantity" min="1" :max="product?.stock || 1">
-          <button @click="addToCart" class="btn btn-primary" x-text="added ? 'Added!' : 'Add to Cart'"></button>
-        </div>
+        @if(product.stock > 0)
+          <p class="stock">{{ product.stock }} in stock</p>
+        @else
+          <p class="stock out">Out of stock</p>
+        @endif
+
+        @if(product.description)
+          <p class="description">{{ product.description }}</p>
+        @endif
+
+        @if(product.stock > 0)
+          <form action="/cart" method="post" class="add-to-cart">
+            <input type="hidden" name="product_id" value="{{ product.id }}">
+            <label for="qty">Qty</label>
+            <input type="number" id="qty" name="quantity" value="1" min="1" max="{{ product.stock }}">
+            <button type="submit" class="btn btn-primary">Add to Cart</button>
+          </form>
+        @endif
+
+        @if(product.category && typeof product.category === 'object')
+          <p class="meta">Category: <a href="/products?category={{ product.category.slug }}">{{ product.category.name }}</a></p>
+        @endif
+
+        @if(product.tags && product.tags.length)
+          <div class="tags">
+            @foreach(product.tags as tag)
+              <span class="tag">{{ tag.name }}</span>
+            @endforeach
+          </div>
+        @endif
       </div>
     </div>
+
+    @if(related && related.length)
+      <section class="home-section">
+        <h2>Related Products</h2>
+        <div class="product-grid">
+          @foreach(related as item)
+            <a href="/products/{{ item.id }}" class="card">
+              <div class="card-image">{{ item.name.charAt(0) }}</div>
+              <h3>{{ item.name }}</h3>
+              <p class="price">${{ parseFloat(item.price).toFixed(2) }}</p>
+            </a>
+          @endforeach
+        </div>
+      </section>
+    @endif
   </div>
 @end@section

@@ -31,13 +31,7 @@ export default Admin.resource(Order)
       Column.date('paidAt'),
     ])
     .filters([
-      Filter.select('status', [
-        { value: 'pending', label: 'Pending' },
-        { value: 'processing', label: 'Processing' },
-        { value: 'shipped', label: 'Shipped' },
-        { value: 'delivered', label: 'Delivered' },
-        { value: 'cancelled', label: 'Cancelled' },
-      ]),
+      Filter.select('status'),
       Filter.belongsTo('user'),
     ])
     .actions([

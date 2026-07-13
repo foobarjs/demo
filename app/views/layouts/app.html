@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>@yield('title') - Foobar Shop</title>
   <link rel="stylesheet" href="/css/app.css">
-  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 </head>
 <body>
   <header>
@@ -15,18 +14,18 @@
         <a href="/">Home</a>
         <a href="/products">Products</a>
         <a href="/cart">Cart ({{ cartCount }})</a>
-        <a href="/checkout">Checkout</a>
         @if(loggedIn)
-          <form action="/logout" method="post" style="display:inline">
-            <button type="submit" style="background:none;border:none;color:#94a3b8;cursor:pointer;font-size:0.9rem;font-family:inherit">Logout</button>
+          <form action="/logout" method="post" class="nav-form">
+            <button type="submit">Logout</button>
           </form>
         @else
           <a href="/login">Login</a>
         @endif
-        <a href="/admin">Admin</a>
+        <a href="/admin" class="nav-admin">Admin</a>
       </nav>
     </div>
   </header>
+
   <main>
     @if(flash.success)
       <div class="alert alert-success">{{ flash.success }}</div>
@@ -36,8 +35,9 @@
     @endif
     @yield('content')
   </main>
+
   <footer>
-    <p>&copy; 2026 Foobar Shop. Built with foobarjs.</p>
+    <p>Built with <a href="https://github.com/foobarjs/foobarjs">foobarjs</a></p>
   </footer>
 </body>
 </html>
