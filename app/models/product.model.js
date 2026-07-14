@@ -11,8 +11,8 @@ class Product extends Model {
     stock: Field.number().default(0).unsigned(),
     image: Field.image().nullable(),
     published: Field.boolean().default(false).index(),
-    category: Field.belongsTo(Category),
-    tags: Field.belongsToMany(Tag),
+    category: Field.belongsTo(() => Category),
+    tags: Field.belongsToMany(() => Tag),
   }
 
   static timestamps = true

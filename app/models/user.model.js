@@ -1,5 +1,6 @@
 import { AuthenticableModel } from 'foobarjs/auth'
 import { Field } from 'foobarjs/orm'
+import Profile from './profile.model.js'
 
 class User extends AuthenticableModel {
   static schema = {
@@ -8,7 +9,7 @@ class User extends AuthenticableModel {
     password: Field.string().required().hidden(),
     isAdmin: Field.boolean().default(false),
     roles: Field.json().nullable(),
-    profile: Field.hasOne('Profile'),
+    profile: Field.hasOne(() => Profile),
   }
 
   static timestamps = true

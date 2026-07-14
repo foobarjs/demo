@@ -3,7 +3,7 @@ import User from './user.model.js'
 
 class Order extends Model {
   static schema = {
-    user: Field.belongsTo(User),
+    user: Field.belongsTo(() => User),
     status: Field.string().enum('pending', 'processing', 'shipped', 'delivered', 'cancelled').default('pending').index(),
     total: Field.float().unsigned().default(0),
     shippingAddress: Field.text().nullable(),

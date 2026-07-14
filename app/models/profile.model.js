@@ -6,7 +6,7 @@ class Profile extends Model {
   static schema = {
     bio: Field.text().nullable(),
     avatar: Field.string().nullable(),
-    user: Field.belongsTo(User),
+    user: Field.belongsTo(() => User),
   }
 
   static timestamps = true
