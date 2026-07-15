@@ -9,7 +9,7 @@ class Product extends Model {
     description: Field.text().nullable(),
     price: Field.float().required().unsigned(),
     stock: Field.number().default(0).unsigned(),
-    image: Field.image().nullable(),
+    image: Field.image().storagePath('products').nullable(),
     published: Field.boolean().default(false).index(),
     category: Field.belongsTo(() => Category),
     tags: Field.belongsToMany(() => Tag),

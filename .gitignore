@@ -8,9 +8,12 @@ database/*.db
 database/*.db-journal
 database/:memory:
 
-# uploads
+# uploads (legacy)
 public/uploads/*
 !public/uploads/.gitkeep
+
+# storage (runtime data)
+storage/app/
 
 # logs
 storage/logs/

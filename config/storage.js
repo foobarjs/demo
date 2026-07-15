@@ -1,6 +1,7 @@
 export default {
-  default: 'local',
+  default: 'public',
   disks: {
-    local: { driver: 'local', root: 'public/uploads' },
+    public: { driver: 'local', root: 'storage/app/public' },
+    private: { driver: 'local', root: 'storage/app/private' },
   },
 }

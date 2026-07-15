@@ -453,7 +453,7 @@ describe('Admin Panel', () => {
     const product = await Product.where('slug', slug).first()
     assert.ok(product)
     assert.ok(product.image, 'Product should have an image path')
-    assert.ok(product.image.startsWith('/uploads/'), `Image path should start with /uploads/, got ${product.image}`)
+    assert.ok(product.image.startsWith('/storage/'), `Image path should start with /storage/, got ${product.image}`)
   })
 
   test('updates a record with image upload', async ({ request }) => {
@@ -483,7 +483,7 @@ describe('Admin Panel', () => {
     assert.strictEqual(res.status, 302)
     const updated = await Product.find(product.id)
     assert.ok(updated.image, 'Updated product should have an image path')
-    assert.ok(updated.image.startsWith('/uploads/'))
+    assert.ok(updated.image.startsWith('/storage/'))
     assert.ok(updated.image.endsWith('.jpg'))
   })
 
@@ -497,10 +497,10 @@ describe('Admin Panel', () => {
       slug,
       price: 25.00,
       stock: 0,
-      image: '/uploads/old-image.png',
+      image: '/storage/old-image.png',
     })
     assert.ok(product)
-    assert.strictEqual(product.image, '/uploads/old-image.png')
+    assert.strictEqual(product.image, '/storage/old-image.png')
 
     const formData = new FormData()
     formData.append('name', product.name)
