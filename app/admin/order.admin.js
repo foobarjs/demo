@@ -1,4 +1,4 @@
-import { Admin, Action, Column, Filter, Section, Widget } from 'foobarjs/admin'
+import { Admin, Action, ExportAction, Column, Filter, Section, Widget } from 'foobarjs/admin'
 import Order from '../models/order.model.js'
 
 export default Admin.resource(Order)
@@ -7,6 +7,12 @@ export default Admin.resource(Order)
   .group('Sales')
   .displayLabel(o => `Order #${o.id}`)
   .dashboard({ icon: 'bi-cart', color: 'primary' })
+  .beforeStore(async ({ data }) => {
+    if (!data.status) data.status = 'pending'
+  })
+  .afterStore(async ({ item }) => {
+    console.log(`[hook] Order #${item.id} created with status ${item.status}`)
+  })
   .permissions({
     view: ['admin', 'editor'],
     create: ['admin'],
@@ -30,10 +36,6 @@ export default Admin.resource(Order)
       Column.money('total').sortable(),
       Column.date('paidAt'),
     ])
-    .filters([
-      Filter.select('status'),
-      Filter.belongsTo('user'),
-    ])
     .actions([
       Action.make('ship', 'Mark as shipped')
         .icon('bi-truck')
@@ -44,7 +46,23 @@ export default Admin.resource(Order)
           return 'Order marked as shipped.'
         }),
     ])
+    
+    .filters([
+      Filter.select('status'),
+      Filter.belongsTo('user'),
+    ])
+
+    .bulkActions([
+      ExportAction.make('export-orders', 'Export Orders')
+        .filename('orders-export')
+        .columns(['id', 'status', 'total', 'shippingAddress', 'paidAt', { 'QR': (record) => `https://qr.example.com/${record.id}` }])
+        .delimiter(',')
+        .dateFormat('YYYY-MM-DD HH:mm')
+        .confirm()
+    ])
+   
   )
+  
   .form(form => form
     .sections([
       Section.make('Customer & Status').fields(['user', 'status']).columns(2),
