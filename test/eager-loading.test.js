@@ -63,7 +63,7 @@ describe('Eager Loading', () => {
 
     const [loaded] = await Category.withCount('products').where('id', cat.id).get()
     assert.ok(loaded)
-    assert.strictEqual(loaded.products_count, 2, 'should count 2 products')
+    assert.strictEqual(loaded.productsCount, 2, 'should count 2 products')
   })
 
   test('withCount on belongsToMany relation', async () => {
@@ -76,14 +76,14 @@ describe('Eager Loading', () => {
 
     const loaded = await Product.withCount('tags').find(product.id)
     assert.ok(loaded)
-    assert.strictEqual(loaded.tags_count, 2, 'should count 2 tags')
+    assert.strictEqual(loaded.tagsCount, 2, 'should count 2 tags')
   })
 
   test('withCount returns 0 for empty relation', async () => {
     const product = await Product.create({ name: 'ZeroCount', slug: `zc-${Date.now()}`, price: 1, stock: 0 })
     const loaded = await Product.withCount('tags').find(product.id)
     assert.ok(loaded)
-    assert.strictEqual(loaded.tags_count, 0, 'should count 0 tags')
+    assert.strictEqual(loaded.tagsCount, 0, 'should count 0 tags')
   })
 
   test('loads hasOne relation', async () => {

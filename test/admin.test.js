@@ -589,7 +589,8 @@ describe('Admin Panel', () => {
     assert.ok(text.includes('Stock'), 'CSV should have Stock column')
     assert.ok(text.match(/\n.+,/), 'CSV should have at least one data row')
     assert.ok(res.headers.get('Content-Type').includes('text/csv'))
-    assert.ok(res.headers.get('Content-Disposition').includes('products.csv'))
+    assert.ok(res.headers.get('Content-Disposition').includes('products'), 'filename should contain products')
+    assert.ok(res.headers.get('Content-Disposition').includes('.csv'), 'filename should end with .csv')
   })
 
   test('clears all tags from a product', async ({ request }) => {

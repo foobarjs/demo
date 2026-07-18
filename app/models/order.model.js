@@ -7,6 +7,7 @@ class Order extends Model {
     status: Field.string().enum('pending', 'processing', 'shipped', 'delivered', 'cancelled').default('pending').index(),
     total: Field.float().unsigned().default(0),
     shippingAddress: Field.text().nullable(),
+    notes: Field.json().nullable(),
     paidAt: Field.date().nullable(),
   }
 

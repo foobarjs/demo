@@ -50,6 +50,11 @@ export default Admin.resource(Order)
     .filters([
       Filter.select('status'),
       Filter.belongsTo('user'),
+      Filter.dateRange('createdAt').label('Order Date'),
+      Filter.date('paidAt').label('Paid On'),
+      Filter.text('minTotal').label('Min Total').query((query, value) => {
+        query.where('total', '>=', Number(value))
+      }),
     ])
 
     .bulkActions([
@@ -68,14 +73,16 @@ export default Admin.resource(Order)
       Section.make('Customer & Status').fields(['user', 'status']).columns(2),
       Section.make('Payment').fields(['total', 'paidAt']).columns(2),
       Section.make('Shipping').fields(['shippingAddress']),
+      Section.make('Notes').fields(['notes']),
     ])
   )
   .detail(detail => detail
-    .fields(['id', 'user', 'status', 'total', 'paidAt', 'shippingAddress', 'createdAt'])
+    .fields(['id', 'user', 'status', 'total', 'paidAt', 'shippingAddress', 'notes', 'createdAt'])
     .sections([
       Section.make('Overview').fields(['id', 'user', 'status']).columns(2),
       Section.make('Payment').fields(['total', 'paidAt']).columns(2).icon('bi-cash-coin'),
       Section.make('Shipping').fields(['shippingAddress']).icon('bi-truck'),
+      Section.make('Notes').fields(['notes']),
     ])
   )
   .widgets([

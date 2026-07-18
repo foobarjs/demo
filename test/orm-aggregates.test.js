@@ -406,7 +406,7 @@ describe('ORM Relation Aggregates', () => {
 
     const [loaded] = await Category.query().withSum('products', 'price').where('id', cat.id).get()
     assert.ok(loaded)
-    assert.strictEqual(loaded.products_sum_price, 20)
+    assert.strictEqual(loaded.productsSumPrice, 20)
   })
 
   test('withAvg on hasMany relation', async () => {
@@ -415,7 +415,7 @@ describe('ORM Relation Aggregates', () => {
     await Product.create({ name: `Avg P2 ${suiteTs}`, slug: `avg-p2-${suiteTs}`, price: 20, category: cat.id })
 
     const [loaded] = await Category.query().withAvg('products', 'price').where('id', cat.id).get()
-    assert.strictEqual(loaded.products_avg_price, 15)
+    assert.strictEqual(loaded.productsAvgPrice, 15)
   })
 
   test('withMax on hasMany relation', async () => {
@@ -424,7 +424,7 @@ describe('ORM Relation Aggregates', () => {
     await Product.create({ name: `Max P2 ${suiteTs}`, slug: `max-p2-${suiteTs}`, price: 22, category: cat.id })
 
     const [loaded] = await Category.query().withMax('products', 'price').where('id', cat.id).get()
-    assert.strictEqual(loaded.products_max_price, 22)
+    assert.strictEqual(loaded.productsMaxPrice, 22)
   })
 
   test('withExists returns boolean flag', async () => {
@@ -437,8 +437,8 @@ describe('ORM Relation Aggregates', () => {
       .whereIn('id', [withProds.id, noProds.id])
       .get()
     const byId = new Map(results.map(r => [r.id, r]))
-    assert.strictEqual(byId.get(withProds.id).products_exists, true)
-    assert.strictEqual(byId.get(noProds.id).products_exists, false)
+    assert.strictEqual(byId.get(withProds.id).productsExists, true)
+    assert.strictEqual(byId.get(noProds.id).productsExists, false)
   })
 })
 
