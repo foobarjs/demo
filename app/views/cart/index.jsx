@@ -1,0 +1,64 @@
+import App from '../layouts/App.jsx'
+
+export default function Cart({ cart }) {
+  return (
+    <App title="Cart">
+      <div class="container">
+        <h1>Shopping Cart</h1>
+
+        {!cart?.length ? (
+          <div class="empty">
+            <p>Your cart is empty.</p>
+            <a href="/products" class="btn btn-primary">Browse Products</a>
+          </div>
+        ) : (
+          <>
+            <table>
+              <thead>
+                <tr>
+                  <th>Product</th>
+                  <th>Price</th>
+                  <th>Quantity</th>
+                  <th>Subtotal</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+                {cart.map(item => (
+                  <tr>
+                    <td><a href={`/products/${item.id}`}>{item.name}</a></td>
+                    <td>${parseFloat(item.price).toFixed(2)}</td>
+                    <td>
+                      <form action={`/cart/${item.id}`} method="post" class="qty-form">
+                        <input type="hidden" name="_method" value="PUT" />
+                        <input type="number" name="quantity" value={item.quantity} min="1" />
+                        <button type="submit" class="btn btn-sm">Update</button>
+                      </form>
+                    </td>
+                    <td>${(parseFloat(item.price) * item.quantity).toFixed(2)}</td>
+                    <td>
+                      <form action={`/cart/${item.id}?_method=DELETE`} method="post">
+                        <button type="submit" class="btn btn-sm btn-danger">Remove</button>
+                      </form>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+              <tfoot>
+                <tr>
+                  <td colspan="3"><strong>Total</strong></td>
+                  <td><strong>${cart.reduce((sum, i) => sum + parseFloat(i.price) * i.quantity, 0).toFixed(2)}</strong></td>
+                  <td></td>
+                </tr>
+              </tfoot>
+            </table>
+            <div class="cart-actions">
+              <a href="/products" class="btn">Continue Shopping</a>
+              <a href="/checkout" class="btn btn-primary">Proceed to Checkout</a>
+            </div>
+          </>
+        )}
+      </div>
+    </App>
+  )
+}

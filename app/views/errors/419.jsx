@@ -1,0 +1,17 @@
+import App from '../layouts/App.jsx'
+
+export default function PageExpired({ requestId }) {
+  return (
+    <App title="419 - Page Expired">
+      <div class="container error-page" style="text-align:center; padding: 60px 20px;">
+        <h1 style="font-size: 48px; color:#dc2626; margin:0;">419</h1>
+        <h2 style="margin: 12px 0;">Page Expired</h2>
+        <p style="color:#64748b;">Your session has expired. Please refresh the page and try again.</p>
+        <p><a href="/" class="btn btn-primary">Go back home</a></p>
+        {requestId && (
+          <p style="margin-top: 40px; font-size: 12px; color:#94a3b8; font-family: monospace;">Request ID: {requestId}</p>
+        )}
+      </div>
+    </App>
+  )
+}
