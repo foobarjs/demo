@@ -1,6 +1,7 @@
 import { Controller, HttpException, NotFoundError, ForbiddenError } from 'foobarjs/core'
 
 class BoomController extends Controller {
+  static auth = false
   async index() {
     if (process.env.NODE_ENV === 'production') {
       throw new NotFoundError('Not found')

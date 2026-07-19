@@ -8,6 +8,7 @@ import { Event } from 'foobarjs/events'
 import { Model } from 'foobarjs/orm'
 
 class CheckoutController extends Controller {
+  static auth = false
   async index() {
     const cart = this.c.get('session')?.get('cart') || []
     return this.render('checkout/index', { cart, title: 'Checkout' })

@@ -2,6 +2,7 @@ import { Controller } from 'foobarjs/core'
 import Product from '../models/product.model.js'
 
 class CartController extends Controller {
+  static auth = false
   async index() {
     const cart = this.c.get('session')?.get('cart') || []
     return this.render('cart/index', { cart, title: 'Cart' })

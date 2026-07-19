@@ -3,6 +3,7 @@ import Product from '../models/product.model.js'
 import Category from '../models/category.model.js'
 
 class ProductsController extends Controller {
+  static auth = false
   async index() {
     const categorySlug = this.c.req.query('category')
     const categories = await Category.all()
