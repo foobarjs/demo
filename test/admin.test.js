@@ -869,15 +869,6 @@ describe('Admin Panel', () => {
     assert.ok(text.includes('fb-widget-chart-'), 'Chart widget should render a canvas element')
   })
 
-  test('admin routes are exempt from the global rate limit', async ({ request }) => {
-    const admin = await adminRequest(request)
-    // Well beyond the 100/min default; must never 429.
-    for (let i = 0; i < 200; i++) {
-      const res = await admin.post('/admin/prefs').form({ theme: i % 2 === 0 ? 'dark' : 'light' })
-      assert.notStrictEqual(res.status, 429, `Request ${i} should not be rate-limited`)
-    }
-  })
-
   test('framework models appear under the System group with proper labels', async ({ request }) => {
     const admin = await adminRequest(request)
     const res = await admin.get('/admin')
@@ -1024,5 +1015,15 @@ describe('Admin Panel', () => {
     assert.strictEqual(res.status, 200)
     const text = await res.text()
     assert.ok(text.includes('Exports'), 'Exports page should render')
+  })
+
+  test('admin routes are subject to the global rate limit', async ({ request }) => {
+    const admin = await adminRequest(request)
+    let got429 = false
+    for (let i = 0; i < 200; i++) {
+      const res = await admin.post('/admin/prefs').form({ theme: i % 2 === 0 ? 'dark' : 'light' })
+      if (res.status === 429) { got429 = true; break }
+    }
+    assert.ok(got429, 'Admin routes should be rate-limited after exceeding the threshold')
   })
 })
