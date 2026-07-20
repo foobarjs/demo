@@ -5,7 +5,7 @@ import Category from '../models/category.model.js'
 class ProductsController extends Controller {
   static auth = false
   async index() {
-    const categorySlug = this.c.req.query('category')
+    const categorySlug = this.query('category')
     const categories = await Category.all()
 
     let query = Product.where('published', true)
@@ -28,7 +28,7 @@ class ProductsController extends Controller {
   }
 
   async show() {
-    const id = parseInt(this.c.req.param('id'))
+    const id = parseInt(this.param('id'))
     const product = await Product.with('category', 'tags').find(id)
 
     if (!product) {

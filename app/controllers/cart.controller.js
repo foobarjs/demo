@@ -9,7 +9,7 @@ class CartController extends Controller {
   }
 
   async store() {
-    const body = await this.body()
+    const body = this.body
     const productId = parseInt(body.product_id)
     const quantity = parseInt(body.quantity) || 1
 
@@ -41,16 +41,16 @@ class CartController extends Controller {
     session.set('cart', cart)
     session.flash('success', `Added ${product.name} to cart`)
 
-    const referer = this.c.req.header('Referer') || '/cart'
-    if (this.c.req.header('Accept')?.includes('json')) {
+    const referer = this.header('Referer') || '/cart'
+    if (this.header('Accept')?.includes('json')) {
       return this.json({ cart, count: cart.reduce((s, i) => s + i.quantity, 0) })
     }
     return this.redirect(referer)
   }
 
   async update() {
-    const id = parseInt(this.c.req.param('id'))
-    const body = await this.body()
+    const id = parseInt(this.param('id'))
+    const body = this.body
     const quantity = parseInt(body.quantity)
 
     if (!quantity || quantity < 1) {
@@ -71,7 +71,7 @@ class CartController extends Controller {
   }
 
   async destroy() {
-    const id = parseInt(this.c.req.param('id'))
+    const id = parseInt(this.param('id'))
     const session = this.c.get('session')
     const cart = (session.get('cart') || []).filter(i => i.id !== id)
     session.set('cart', cart)

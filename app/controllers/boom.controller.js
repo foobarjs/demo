@@ -6,7 +6,7 @@ class BoomController extends Controller {
     if (process.env.NODE_ENV === 'production') {
       throw new NotFoundError('Not found')
     }
-    const kind = this.c.req.query('kind') || 'generic'
+    const kind = this.query('kind') || 'generic'
     if (kind === 'generic') {
       throw new Error('kaboom')
     }
@@ -21,7 +21,7 @@ class BoomController extends Controller {
     }
     if (kind === 'reflected') {
       // For XSS-escape testing
-      throw new Error(String(this.c.req.query('msg') || ''))
+      throw new Error(String(this.query('msg') || ''))
     }
     return { ok: true }
   }
