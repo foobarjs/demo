@@ -1,6 +1,6 @@
 import { Controller } from 'foobarjs/core'
+import User from '../../models/user.model.js'
 import Event from '../../models/event.model.js'
-import Order from '../../models/order.model.js'
 import Attendee from '../../models/attendee.model.js'
 
 class DashboardController extends Controller {
@@ -9,23 +9,22 @@ class DashboardController extends Controller {
   static middleware = ['auth', 'RequireUser']
 
   async index() {
-    const user = this.user
-    const events = await Event.where('organizer_id', user.id)
-      .orderBy('startsAt', 'desc').get()
-    const eventIds = events.map(e => e.id)
-
-    // Two aggregate queries total, regardless of event count.
-    const [totalRevenue, totalAttendees] = eventIds.length
-      ? await Promise.all([
-          Order.query().whereIn('event', eventIds).where('status', 'confirmed').sum('total'),
-          Attendee.query().whereIn('event', eventIds).count(),
-        ])
-      : [0, 0]
+    // One eager-load-with-aggregates roundtrip: pulls the organizer's events
+    // (ordered), the confirmed-order revenue rolled up through events.orders,
+    // and the total attendee count rolled up through events.attendees.
+    // Framework compiles this to hops+1 queries per through-aggregate, no
+    // JOINs, and auto-chunks bind lists at the driver limit.
+    const user = await User.query()
+      .where('id', this.user.id)
+      .with('events', q => q.orderBy('startsAt', 'desc'))
+      .withSum('events.orders', 'total', q => q.where('status', 'confirmed'))
+      .withCount('events.attendees')
+      .first()
 
     return this.render('organizer/dashboard', {
-      events,
-      totalRevenue: totalRevenue || 0,
-      totalAttendees,
+      events: user.events || [],
+      totalRevenue: user.eventsOrdersSumTotal || 0,
+      totalAttendees: user.eventsAttendeesCount || 0,
     })
   }
 
