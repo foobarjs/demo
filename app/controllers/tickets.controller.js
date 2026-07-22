@@ -30,7 +30,7 @@ class TicketsController extends Controller {
       throw err
     }
 
-    const email = Str.lower(request.validated().email).trim()
+    const email = request.validated().email
     const anyRow = await Attendee.where('email', email).first()
 
     // Always render "check your inbox" regardless of hit/miss to prevent
@@ -104,7 +104,7 @@ class TicketsController extends Controller {
       throw err
     }
 
-    ticket.name = request.validated().name.trim()
+    ticket.name = request.validated().name
     await ticket.save()
     this.flash('success', 'Ticket updated.')
     return this.redirect('/tickets/my')

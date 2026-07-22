@@ -4,7 +4,7 @@ import { Field } from 'foobarjs/orm'
 class SendMagicLinkValidator extends FormRequest {
   rules() {
     return {
-      email: Field.string().required().email().maxLength(255),
+      email: Field.string().required().email().lowercase().maxLength(255),
     }
   }
 }

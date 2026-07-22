@@ -5,10 +5,10 @@ class CheckoutValidator extends FormRequest {
   rules() {
     return {
       name: Field.string().required().minLength(2),
-      email: Field.string().required().email(),
+      email: Field.string().required().email().lowercase(),
       event_id: Field.number().required(),
       ticket_type_id: Field.number().required(),
-      quantity: Field.number().required().min(1).max(10),
+      quantity: Field.number().integer().required().min(1).max(10),
     }
   }
 }
