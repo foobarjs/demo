@@ -47,8 +47,11 @@ class CheckoutController extends Controller {
       return this.back().withErrors({ ticket_type_id: ['Invalid ticket type for this event.'] }).withInput(body)
     }
 
-    // Validator already coerced quantity to a number in [1..10].
-    const qty = body.quantity
+    // Field.number() validates a numeric string but does NOT coerce it,
+    // so body.quantity comes through as a string. Coerce here before the
+    // arithmetic below — otherwise `sold + qty` becomes string concat and
+    // the "not enough tickets" check misfires.
+    const qty = Number(body.quantity)
     if (ticketType.sold + qty > ticketType.quantity) {
       return this.back().withErrors({ quantity: ['Not enough tickets available.'] }).withInput(body)
     }
