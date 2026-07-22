@@ -8,9 +8,12 @@ class Order extends Model {
     name: Field.string().required(),
     status: Field.string().enum('pending', 'confirmed', 'cancelled', 'refunded').default('pending').index(),
     paymentStatus: Field.string().enum('unpaid', 'paid', 'refunded').default('unpaid'),
-    subtotal: Field.float().unsigned().default(0),
-    discount: Field.float().unsigned().default(0),
-    total: Field.float().unsigned().default(0),
+    // .min(0) is the app-level validator (friendly per-field error messages
+    // in forms); the CHECK constraint below is the DB-level backstop that
+    // holds even for raw SQL, forceFill, or bulk updates.
+    subtotal: Field.float().unsigned().default(0).min(0),
+    discount: Field.float().unsigned().default(0).min(0),
+    total: Field.float().unsigned().default(0).min(0),
     event: Field.belongsTo(() => Event),
   }
 

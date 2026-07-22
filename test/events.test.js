@@ -33,7 +33,8 @@ describe('Events', () => {
         quantity: 1,
       })
 
-    assert.strictEqual(checkoutRes.status, 201)
+    // Web-only SSR route: renders the confirmation view directly (200), not a JSON 201.
+    assert.strictEqual(checkoutRes.status, 200)
 
     const emails = Mailer.getArrayDriverMessages()
     assert.ok(emails.length >= 1, 'Expected at least one email')

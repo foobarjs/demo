@@ -1,5 +1,6 @@
 import App from '../layouts/App.jsx'
 import { useView } from 'foobarjs/jsx'
+import { Num } from 'foobarjs/support'
 
 function Stat({ label, value, hint, icon }) {
   return (
@@ -29,7 +30,7 @@ export default function Dashboard({ events, totalRevenue, totalAttendees }) {
       <section class="container section">
         <div class="stats-grid">
           <Stat label="Total events" value={events?.length || 0} hint={`${upcoming} published, ${drafts} draft`} icon="◆" />
-          <Stat label="Revenue" value={`$${Number(totalRevenue || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`} hint="all confirmed orders" icon="◇" />
+          <Stat label="Revenue" value={Num.currency(totalRevenue || 0)} hint="all confirmed orders" icon="◇" />
           <Stat label="Attendees" value={totalAttendees || 0} hint="across all events" icon="◈" />
         </div>
 

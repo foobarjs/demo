@@ -1,5 +1,6 @@
 import App from '../layouts/App.jsx'
 import { useView } from 'foobarjs/jsx'
+import { Num } from 'foobarjs/support'
 
 export default function Checkout({ event, ticketTypes }) {
   const { errors, old } = useView()
@@ -30,7 +31,7 @@ export default function Checkout({ event, ticketTypes }) {
               <select name="ticket_type_id" id="ticket_type_id" class={errors?.ticket_type_id ? 'is-invalid' : ''}>
                 {ticketTypes.map(tt => (
                   <option value={tt.id} selected={old('ticket_type_id') == tt.id || tt.id === selectedTicket?.id}>
-                    {tt.name} — ${Number(tt.price).toFixed(2)} · {tt.quantity - tt.sold} left
+                    {tt.name} — {Num.currency(tt.price)} · {tt.quantity - tt.sold} left
                   </option>
                 ))}
               </select>

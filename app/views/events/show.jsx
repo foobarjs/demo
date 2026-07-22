@@ -1,4 +1,5 @@
 import App from '../layouts/App.jsx'
+import { Num } from 'foobarjs/support'
 
 function formatDateRange(startsAt, endsAt) {
   const s = new Date(startsAt)
@@ -130,7 +131,7 @@ export default function EventShow({ event, ticketTypes }) {
                     <div class={`ticket-row ${soldOut ? 'sold-out' : ''}`}>
                       <div class="ticket-row-head">
                         <div class="ticket-name">{tt.name}</div>
-                        <div class="ticket-price">${Number(tt.price).toFixed(2)}</div>
+                        <div class="ticket-price">{Num.currency(tt.price)}</div>
                       </div>
                       {tt.description && <p class="ticket-desc">{tt.description}</p>}
                       <div class="ticket-row-foot">

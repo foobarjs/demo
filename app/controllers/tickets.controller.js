@@ -1,4 +1,5 @@
 import { Controller, SignedUrl } from 'foobarjs/core'
+import { Str } from 'foobarjs/support'
 import { Mailer } from 'foobarjs/mail'
 import Attendee from '../models/attendee.model.js'
 import Order from '../models/order.model.js'
@@ -29,7 +30,7 @@ class TicketsController extends Controller {
       throw err
     }
 
-    const email = request.validated().email.trim().toLowerCase()
+    const email = Str.lower(request.validated().email).trim()
     const anyRow = await Attendee.where('email', email).first()
 
     // Always render "check your inbox" regardless of hit/miss to prevent
@@ -56,7 +57,7 @@ class TicketsController extends Controller {
       return this.redirect('/tickets')
     }
 
-    const email = String(params.email || '').toLowerCase()
+    const email = Str.lower(params.email)
     const attendee = await Attendee.where('email', email).first()
     if (!attendee) {
       this.flash('error', 'No tickets found for that email.')
@@ -74,19 +75,18 @@ class TicketsController extends Controller {
 
   async my() {
     const email = this.user.email
+    // Eager-load relations in the query itself — no per-item .load() loop.
     const [tickets, orders] = await Promise.all([
-      Attendee.where('email', email).orderBy('createdAt', 'desc').get(),
-      Order.where('email', email).orderBy('createdAt', 'desc').get(),
+      Attendee.with('event', 'ticketType').where('email', email).orderBy('createdAt', 'desc').get(),
+      Order.with('event').where('email', email).orderBy('createdAt', 'desc').get(),
     ])
-    for (const t of tickets) await t.load('event', 'ticketType')
-    for (const o of orders) await o.load('event')
     return this.render('tickets/my', { email, tickets, orders })
   }
 
   async edit() {
-    const ticket = await Attendee.findOrFail(this.param('id'))
+    const ticket = await Attendee.with('event', 'ticketType').find(this.param('id'))
+    if (!ticket) return this.redirect('/tickets/my')
     await this.authorize('updateName', ticket)
-    await ticket.load('event', 'ticketType')
     return this.render('tickets/edit', { ticket })
   }
 
@@ -131,7 +131,7 @@ class TicketsController extends Controller {
   }
 
   _secret() {
-    const secret = this.c.get('configLoader')?.get?.('app.secret') || process.env.APP_SECRET
+    const secret = this.config('app.secret')
     if (!secret) throw new Error('APP_SECRET is not configured')
     return secret
   }

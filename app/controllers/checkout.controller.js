@@ -10,6 +10,9 @@ import DiscountCode from '../models/discount-code.model.js'
 import OrderPlaced from '../events/order-placed.event.js'
 import CheckoutValidator from '../validators/checkout.validator.js'
 
+// Web-only controller — renders HTML views and issues redirects with flash
+// messages. For JSON checkout, expose a separate handler in routes/api.js
+// (or app/api/*.api.js) so the response contract stays predictable per route.
 class CheckoutController extends Controller {
   static auth = false
 
@@ -28,27 +31,26 @@ class CheckoutController extends Controller {
       request = await this.validate(CheckoutValidator)
     } catch (err) {
       if (err.name === 'ValidationError') {
-        if (this.wantsJson()) return this.json({ errors: err.errors }, 422)
         return this.back().withErrors(err).withInput(err.input)
       }
       throw err
     }
 
     const body = request.validated()
-    const event = await Event.find(body.event_id)
-    if (!event || event.status !== 'published') {
-      return this.json({ error: 'Event not available' }, 422)
+    const event = await Event.findOrFail(body.event_id)
+    if (event.status !== 'published') {
+      return this.back().withErrors({ event_id: ['This event is not available.'] }).withInput(body)
     }
 
-    const ticketType = await TicketType.find(body.ticket_type_id)
-    if (!ticketType || ticketType.event !== event.id) {
-      return this.json({ error: 'Invalid ticket type' }, 422)
+    const ticketType = await TicketType.findOrFail(body.ticket_type_id)
+    if (ticketType.event !== event.id) {
+      return this.back().withErrors({ ticket_type_id: ['Invalid ticket type for this event.'] }).withInput(body)
     }
 
-    const qty = parseInt(body.quantity) || 1
+    // Validator already coerced quantity to a number in [1..10].
+    const qty = body.quantity
     if (ticketType.sold + qty > ticketType.quantity) {
-      if (this.wantsJson()) return this.json({ error: 'Not enough tickets available' }, 422)
-      return this.back().withErrors({ quantity: ['Not enough tickets available'] }).withInput(body)
+      return this.back().withErrors({ quantity: ['Not enough tickets available.'] }).withInput(body)
     }
 
     let subtotal = ticketType.price * qty
@@ -68,7 +70,7 @@ class CheckoutController extends Controller {
     }
 
     const total = Math.max(0, subtotal - discount)
-    const orderNumber = `ORD-${Str.random(8).toUpperCase()}`
+    const orderNumber = `ORD-${Str.upper(Str.random(8))}`
 
     const result = await Model.transaction(async () => {
       const order = await Order.create({
@@ -84,15 +86,15 @@ class CheckoutController extends Controller {
       })
 
       // Only the purchaser's own ticket (index 0) is auto-assigned.
-      // Additional tickets in the same order are created UNASSIGNED (name = null)
-      // and share the purchaser's email so they show in the purchaser's portal
-      // until the purchaser assigns each to a specific attendee name.
+      // Additional tickets in the same order start unassigned (name = null)
+      // and share the purchaser's email so they show in the purchaser's
+      // portal until each is assigned to a specific attendee.
       const attendees = []
       for (let i = 0; i < qty; i++) {
         const attendee = await Attendee.create({
           name: i === 0 ? body.name : null,
           email: body.email,
-          ticketCode: Str.random(12).toUpperCase(),
+          ticketCode: Str.upper(Str.random(12)),
           order: order.id,
           ticketType: ticketType.id,
           event: event.id,
@@ -104,10 +106,6 @@ class CheckoutController extends Controller {
       await EventDispatcher.dispatch(new OrderPlaced(order, attendees))
       return { order, attendees }
     })
-
-    if (this.wantsJson()) {
-      return this.json(result, 201)
-    }
 
     this.flash('success', `Order ${orderNumber} confirmed! Check your email for ticket details.`)
     return this.render('checkout/confirmation', {

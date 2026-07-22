@@ -6,13 +6,13 @@ import DashboardController from '../app/controllers/organizer/dashboard.controll
 import TicketsController from '../app/controllers/tickets.controller.js'
 
 export default function (router) {
+  // Public pages
   router.get('/', HomeController, 'index').public()
   router.get('/health', (c) => c.json({ status: 'ok', uptime: process.uptime() })).public()
   router.get('/checkout', CheckoutController, 'index').public()
   router.post('/checkout', CheckoutController, 'store').public()
   router.get('/events', EventsController, 'index').public()
   router.get('/events/:id', EventsController, 'show').public()
-  router.get('/organizer/dashboard/export-attendees', DashboardController, 'exportAttendees')
   router.get('/boom', BoomController, 'index').public()
 
   // Attendee portal — public entry (magic link) + auth-guarded actions
@@ -23,4 +23,10 @@ export default function (router) {
   router.get('/tickets/my', TicketsController, 'my')
   router.get('/tickets/my/:id/edit', TicketsController, 'edit')
   router.post('/tickets/my/:id', TicketsController, 'update')
+
+  // /organizer/dashboard/export-attendees is a custom (non-REST) action;
+  // convention routing only mounts REST verbs so we register it explicitly.
+  // The dashboard/events REST routes themselves are convention-mounted from
+  // app/controllers/organizer/ and inherit the controllers' static middleware.
+  router.get('/organizer/dashboard/export-attendees', DashboardController, 'exportAttendees')
 }

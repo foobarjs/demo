@@ -1,4 +1,5 @@
 import App from '../layouts/App.jsx'
+import { Num } from 'foobarjs/support'
 
 function fmtDate(v, opts) {
   if (!v) return null
@@ -110,7 +111,7 @@ function OrdersRow({ orders }) {
               <div class="portal-order-body">
                 <div class="portal-order-title">{event?.title || 'Event'}</div>
                 <div class="muted portal-order-meta">
-                  {when ? `${when} · ` : ''}${Number(o.total).toFixed(2)}
+                  {when ? `${when} · ` : ''}{Num.currency(o.total)}
                 </div>
               </div>
             </div>

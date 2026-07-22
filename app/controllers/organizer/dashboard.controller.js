@@ -4,6 +4,8 @@ import Order from '../../models/order.model.js'
 import Attendee from '../../models/attendee.model.js'
 
 class DashboardController extends Controller {
+  // Every /organizer/* controller must apply this pair — 'auth' first,
+  // then 'RequireUser' to reject Attendee-portal sessions from this area.
   static middleware = ['auth', 'RequireUser']
 
   async index() {
@@ -12,31 +14,26 @@ class DashboardController extends Controller {
       .orderBy('startsAt', 'desc').get()
     const eventIds = events.map(e => e.id)
 
-    let totalRevenue = 0
-    let totalAttendees = 0
-    if (eventIds.length) {
-      for (const id of eventIds) {
-        const orders = await Order.where('event_id', id).where('status', 'confirmed').get()
-        totalRevenue += orders.reduce((sum, o) => sum + (o.total || 0), 0)
-        const count = await Attendee.where('event_id', id).count()
-        totalAttendees += count
-      }
-    }
+    // Two aggregate queries total, regardless of event count.
+    const [totalRevenue, totalAttendees] = eventIds.length
+      ? await Promise.all([
+          Order.query().whereIn('event', eventIds).where('status', 'confirmed').sum('total'),
+          Attendee.query().whereIn('event', eventIds).count(),
+        ])
+      : [0, 0]
 
     return this.render('organizer/dashboard', {
       events,
-      totalRevenue,
+      totalRevenue: totalRevenue || 0,
       totalAttendees,
     })
   }
 
   async exportAttendees() {
     const eventId = this.query('event')
-    if (!eventId) return this.json({ error: 'Event ID required' }, 400)
+    if (!eventId) return this.redirect('/organizer/dashboard')
 
-    const event = await Event.find(eventId)
-    if (!event) return this.json({ error: 'Event not found' }, 404)
-
+    const event = await Event.findOrFail(eventId)
     await this.authorize('view', event)
 
     const attendees = await Attendee.where('event_id', event.id).get()

@@ -1,4 +1,5 @@
 import App from '../layouts/App.jsx'
+import { Num } from 'foobarjs/support'
 
 export default function Confirmation({ order, attendees, event, ticketType }) {
   const startsAt = event.startsAt ? new Date(event.startsAt) : null
@@ -30,8 +31,8 @@ export default function Confirmation({ order, attendees, event, ticketType }) {
             )}
             <div>
               <dt>Total</dt>
-              <dd>${Number(order.total).toFixed(2)}<br />
-                {order.discount > 0 && <span class="muted">saved ${Number(order.discount).toFixed(2)}</span>}
+              <dd>{Num.currency(order.total)}<br />
+                {order.discount > 0 && <span class="muted">saved {Num.currency(order.discount)}</span>}
               </dd>
             </div>
           </dl>
