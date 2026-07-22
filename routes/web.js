@@ -1,4 +1,3 @@
-import HomeController from '../app/controllers/home.controller.js'
 import DashboardController from '../app/controllers/organizer/dashboard.controller.js'
 import TicketsController from '../app/controllers/tickets.controller.js'
 
