@@ -1,15 +1,16 @@
 import { AuthenticableModel } from 'foobarjs/auth'
 import { Field } from 'foobarjs/orm'
-import Profile from './profile.model.js'
 
 class User extends AuthenticableModel {
+
+  static api = false
+
   static schema = {
     name: Field.string().required(),
     email: Field.string().required().unique(),
     password: Field.string().required().hidden(),
     isAdmin: Field.boolean().default(false),
-    roles: Field.json().nullable(),
-    profile: Field.hasOne(() => Profile),
+    roles: Field.json().enum('admin', 'organizer').multiple().nullable(),
   }
 
   static timestamps = true
@@ -17,7 +18,7 @@ class User extends AuthenticableModel {
   // Privilege and structural fields are never mass-assignable (e.g. via the
   // auto API or admin forms). Set them explicitly with forceFill() in trusted
   // server-side code.
-  static guarded = ['id', 'isAdmin', 'roles', 'createdAt', 'updatedAt']
+  static guarded = ['id', 'isAdmin', 'createdAt', 'updatedAt']
 
   static scopes() {
     return {

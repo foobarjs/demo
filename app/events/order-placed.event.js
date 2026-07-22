@@ -1,7 +1,7 @@
 class OrderPlaced {
-  constructor(order, items) {
+  constructor(order, attendees) {
     this.order = order
-    this.items = items
+    this.attendees = attendees
   }
 }
 

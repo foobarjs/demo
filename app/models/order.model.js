@@ -1,25 +1,23 @@
 import { Model, Field } from 'foobarjs/orm'
-import User from './user.model.js'
+import Event from './event.model.js'
 
 class Order extends Model {
   static schema = {
-    user: Field.belongsTo(() => User),
-    status: Field.string().enum('pending', 'processing', 'shipped', 'delivered', 'cancelled').default('pending').index(),
+    orderNumber: Field.string().required().unique(),
+    email: Field.string().required(),
+    name: Field.string().required(),
+    status: Field.string().enum('pending', 'confirmed', 'cancelled', 'refunded').default('pending').index(),
+    paymentStatus: Field.string().enum('unpaid', 'paid', 'refunded').default('unpaid'),
+    subtotal: Field.float().unsigned().default(0),
+    discount: Field.float().unsigned().default(0),
     total: Field.float().unsigned().default(0),
-    shippingAddress: Field.text().nullable(),
-    notes: Field.json().nullable(),
-    paidAt: Field.date().nullable(),
+    event: Field.belongsTo(() => Event),
   }
 
   static timestamps = true
 
-  static indexes = [
-    { columns: ['user', 'created_at'] },
-    { columns: ['status', 'created_at'], name: 'idx_orders_status_recent' },
-  ]
-
   static checks = [
-    { expression: 'total >= 0', name: 'chk_orders_total_nonnegative' },
+    { expression: 'total >= 0', name: 'chk_orders_total_nonneg' },
   ]
 }
 

@@ -5,11 +5,12 @@ class SendOrderConfirmation {
   static events = [OrderPlaced]
 
   async handle(event) {
-    const { order } = event
+    const { order, attendees } = event
+    const ticketCodes = attendees.map(a => a.ticketCode).join(', ')
     await Mailer
-      .to('customer@example.com')
-      .subject(`Order #${order.id} confirmed`)
-      .text(`Your order for $${order.total} has been received.`)
+      .to(order.email)
+      .subject(`Order ${order.orderNumber} confirmed`)
+      .text(`Hi ${order.name},\n\nYour order has been confirmed.\nTotal: $${order.total}\nTicket codes: ${ticketCodes}\n\nSee you at the event!`)
       .send()
   }
 }

@@ -20,17 +20,17 @@ describe('API Token Authentication', () => {
     const { plainTextToken } = await PersonalAccessToken.createFor(user, 'test-token')
 
     const res = await request
-      .get('/admin/products')
+      .get('/admin/events')
       .set('Authorization', `Bearer ${plainTextToken}`)
 
     const text = await res.text()
     assert.strictEqual(res.status, 200)
-    assert.ok(text.includes('Products'))
+    assert.ok(text.includes('Events'))
   })
 
   test('rejects invalid Bearer token', async ({ request }) => {
     const res = await request
-      .get('/admin/products')
+      .get('/admin/events')
       .set('Authorization', 'Bearer invalid-token')
 
     assert.strictEqual(res.status, 302)
@@ -51,7 +51,7 @@ describe('API Token Authentication', () => {
     const { plainTextToken } = await PersonalAccessToken.createFor(user, 'expired-token', ['*'], yesterday)
 
     const res = await request
-      .get('/admin/products')
+      .get('/admin/events')
       .set('Authorization', `Bearer ${plainTextToken}`)
 
     assert.strictEqual(res.status, 302)

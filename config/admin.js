@@ -1,6 +1,6 @@
 export default {
   theme: {
-    brand: 'Foobar Shop Admin',
+    brand: 'Foobar Events Admin',
     logo: null,
     // Primary color is used to accent buttons and the sidebar active state.
     primaryColor: '#0f172a',
@@ -10,4 +10,8 @@ export default {
   },
   // Restrict admin access to isAdmin users or users with any role (default).
   requireAdmin: true,
+
+  // strictAdmin: only isAdmin users can enter /admin. Organizers use
+  // /organizer/* instead — the admin panel is for platform administrators.
+  strictAdmin: true,
 }

@@ -1,14 +1,14 @@
 import { Model, Field } from 'foobarjs/orm'
 
-const calls = []
+let calls = []
 
 class Hooked extends Model {
-  static admin = false
   static schema = {
     name: Field.string().required(),
     value: Field.string().nullable(),
   }
   static timestamps = true
+  static admin = false
 
   beforeValidate() { calls.push('beforeValidate') }
   afterValidate() { calls.push('afterValidate') }

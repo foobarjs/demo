@@ -1,7 +1,7 @@
 import { test, describe, assert, before, boot } from 'foobarjs/test'
 import { Model } from 'foobarjs/orm'
-import Product from '../app/models/product.model.js'
-import Category from '../app/models/category.model.js'
+import Event from '../app/models/event.model.js'
+import TicketType from '../app/models/ticket-type.model.js'
 
 before(async () => {
   await boot()
@@ -13,34 +13,38 @@ describe('Transactions', () => {
 
     try {
       await Model.transaction(async () => {
-        await Product.create({ name: 'Rollback Product', slug, price: 9.99, stock: 1 })
+        await Event.create({ title: 'Rollback Event', slug, startsAt: new Date('2026-09-01T10:00:00Z') })
         throw new Error('Intentional rollback')
       })
     } catch (err) {
       assert.strictEqual(err.message, 'Intentional rollback')
     }
 
-    const created = await Product.where('slug', slug).first()
+    const created = await Event.where('slug', slug).first()
     assert.strictEqual(created, null)
   })
 
   test('commits when successful', async () => {
     const ts = Date.now()
-    const category = await Category.create({ name: `Txn Cat ${ts}`, slug: `txn-cat-${ts}` })
     const slug = `committed-${ts}`
 
     await Model.transaction(async () => {
-      await Product.create({
-        name: 'Committed Product',
+      const event = await Event.create({
+        title: 'Committed Event',
         slug,
+        startsAt: new Date('2026-09-01T10:00:00Z'),
+        status: 'published',
+      })
+
+      await TicketType.create({
+        name: 'General Admission',
         price: 19.99,
-        stock: 5,
-        category: category.id,
-        published: true,
+        quantity: 100,
+        event: event.id,
       })
     })
 
-    const created = await Product.where('slug', slug).first()
+    const created = await Event.where('slug', slug).first()
     assert.ok(created)
   })
 })

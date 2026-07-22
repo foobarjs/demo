@@ -4,7 +4,11 @@ import { Field } from 'foobarjs/orm'
 class CheckoutValidator extends FormRequest {
   rules() {
     return {
-      address: Field.string().required().minLength(5),
+      name: Field.string().required().minLength(2),
+      email: Field.string().required().email(),
+      event_id: Field.number().required(),
+      ticket_type_id: Field.number().required(),
+      quantity: Field.number().required().min(1).max(10),
     }
   }
 }

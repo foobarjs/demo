@@ -1,5 +1,5 @@
 export default {
-  name: process.env.APP_NAME || 'Foobar Shop',
+  name: process.env.APP_NAME || 'Foobar Events',
   url: process.env.APP_URL || 'http://localhost:3000',
   port: parseInt(process.env.PORT || '3000'),
   env: process.env.NODE_ENV || 'development',

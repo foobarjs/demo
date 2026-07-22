@@ -2,15 +2,17 @@ import App from '../layouts/App.jsx'
 
 export default function ServerError({ status, message, requestId }) {
   return (
-    <App title={`${status || 500} - Server Error`}>
-      <div class="container error-page" style="text-align:center; padding: 60px 20px;">
-        <h1 style="font-size: 48px; color:#dc2626; margin:0;">{status || 500}</h1>
-        <h2 style="margin: 12px 0;">{message || 'Something went wrong'}</h2>
-        <p style="color:#64748b;">We're sorry, but something went wrong on our end. Please try again later.</p>
-        <p><a href="/" class="btn btn-primary">Go back home</a></p>
-        {requestId && (
-          <p style="margin-top: 40px; font-size: 12px; color:#94a3b8; font-family: monospace;">Request ID: {requestId}</p>
-        )}
+    <App title={`${status || 500} · Server error`}>
+      <div class="error-shell">
+        <div class="error-panel">
+          <div class="error-code">{status || 500}</div>
+          <h1>Something went wrong</h1>
+          <p class="muted">{message || "We hit an unexpected error. The team has been notified — please try again in a moment."}</p>
+          <div class="error-actions">
+            <a href="/" class="btn btn-primary">Back to home</a>
+          </div>
+          {requestId && <p class="error-request-id">Request ID: <code>{requestId}</code></p>}
+        </div>
       </div>
     </App>
   )

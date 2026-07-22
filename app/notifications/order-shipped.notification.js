@@ -7,21 +7,13 @@ class OrderShipped extends Notification {
   }
 
   via() {
-    return ['database', 'mail']
+    return ['database']
   }
 
   toDatabase() {
     return {
-      title: 'Order Shipped',
-      message: `Order #${this.order.id} has been shipped.`,
       orderId: this.order.id,
-    }
-  }
-
-  toMail() {
-    return {
-      subject: `Order #${this.order.id} Shipped`,
-      text: `Your order #${this.order.id} has been shipped.`,
+      message: `Order #${this.order.id} has been shipped`,
     }
   }
 }

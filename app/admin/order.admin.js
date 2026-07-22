@@ -3,86 +3,74 @@ import Order from '../models/order.model.js'
 
 export default Admin.resource(Order)
   .label('Orders', 'Order')
-  .icon('bi-cart')
-  .group('Sales')
-  .displayLabel(o => `Order #${o.id}`)
-  .dashboard({ icon: 'bi-cart', color: 'primary' })
-  .beforeStore(async ({ data }) => {
-    if (!data.status) data.status = 'pending'
-  })
-  .afterStore(async ({ item }) => {
-    console.log(`[hook] Order #${item.id} created with status ${item.status}`)
-  })
+  .icon('bi-receipt')
+  .group('Events')
+  .displayLabel(o => o.orderNumber || `Order #${o.id}`)
+  .dashboard({ icon: 'bi-receipt', color: 'primary' })
   .permissions({
-    view: ['admin', 'editor'],
+    view: ['admin', 'organizer'],
     create: ['admin'],
-    edit: ['admin', 'editor'],
+    edit: ['admin'],
     delete: ['admin'],
   })
-  .searchable('status', 'shippingAddress')
+  .searchable('orderNumber', 'email', 'name')
   .defaultSort('createdAt', 'desc')
   .list(list => list
-    .autoFilters(true)
     .columns([
-      Column.text('id').sortable(),
-      Column.belongsTo('user'),
+      Column.text('orderNumber').sortable(),
+      Column.text('name'),
+      Column.belongsTo('event'),
       Column.badge('status', {
         pending: 'warning',
-        processing: 'info',
-        shipped: 'primary',
-        delivered: 'success',
+        confirmed: 'success',
         cancelled: 'danger',
+        refunded: 'info',
+      }),
+      Column.badge('paymentStatus', {
+        unpaid: 'danger',
+        paid: 'success',
+        refunded: 'warning',
+        partial: 'info',
       }),
       Column.money('total').sortable(),
-      Column.date('paidAt'),
+      Column.date('createdAt').sortable(),
     ])
-    .actions([
-      Action.make('ship', 'Mark as shipped')
-        .icon('bi-truck')
-        .variant('primary')
-        .handler(async (order) => {
-          order.status = 'shipped'
-          await order.save()
-          return 'Order marked as shipped.'
-        }),
-    ])
-    
     .filters([
       Filter.select('status'),
-      Filter.belongsTo('user'),
+      Filter.belongsTo('event'),
       Filter.dateRange('createdAt').label('Order Date'),
-      Filter.date('paidAt').label('Paid On'),
-      Filter.text('minTotal').label('Min Total').query((query, value) => {
-        query.where('total', '>=', Number(value))
-      }),
     ])
-
+    .actions([
+      Action.make('confirm', 'Confirm Order')
+        .icon('bi-check-circle')
+        .handler(async (order) => {
+          order.status = 'confirmed'
+          order.paymentStatus = 'paid'
+          await order.save()
+          return 'Order confirmed.'
+        }),
+    ])
     .bulkActions([
       ExportAction.make('export-orders', 'Export Orders')
         .filename('orders-export')
-        .columns(['id', 'status', 'total', 'shippingAddress', 'paidAt', { 'QR': (record) => `https://qr.example.com/${record.id}` }])
+        .columns(['orderNumber', 'name', 'email', 'event', 'status', 'paymentStatus', 'total', 'createdAt'])
         .delimiter(',')
         .dateFormat('YYYY-MM-DD HH:mm')
-        .confirm()
+        .confirm(),
     ])
-   
   )
-  
   .form(form => form
     .sections([
-      Section.make('Customer & Status').fields(['user', 'status']).columns(2),
-      Section.make('Payment').fields(['total', 'paidAt']).columns(2),
-      Section.make('Shipping').fields(['shippingAddress']),
-      Section.make('Notes').fields(['notes']),
+      Section.make('Customer').fields(['name', 'email']).columns(2),
+      Section.make('Order Details').fields(['orderNumber', 'event', 'status']).columns(2),
+      Section.make('Payment').fields(['paymentStatus', 'subtotal', 'discount', 'total']).columns(2).icon('bi-credit-card'),
     ])
   )
   .detail(detail => detail
-    .fields(['id', 'user', 'status', 'total', 'paidAt', 'shippingAddress', 'notes', 'createdAt'])
     .sections([
-      Section.make('Overview').fields(['id', 'user', 'status']).columns(2),
-      Section.make('Payment').fields(['total', 'paidAt']).columns(2).icon('bi-cash-coin'),
-      Section.make('Shipping').fields(['shippingAddress']).icon('bi-truck'),
-      Section.make('Notes').fields(['notes']),
+      Section.make('Customer').fields(['name', 'email']).columns(2),
+      Section.make('Order').fields(['orderNumber', 'event', 'status']).columns(2),
+      Section.make('Payment').fields(['paymentStatus', 'subtotal', 'discount', 'total', 'createdAt']).columns(2).icon('bi-credit-card'),
     ])
   )
   .widgets([
@@ -105,14 +93,4 @@ export default Admin.resource(Order)
       .label('Orders by Status')
       .icon('bi-pie-chart')
       .width('md'),
-    Widget.chart('revenue-30d', Order, {
-      chart: 'line',
-      bucket: 'day',
-      range: 30,
-      metric: 'sum',
-      column: 'total',
-    })
-      .label('Revenue (last 30 days)')
-      .icon('bi-graph-up-arrow')
-      .width('lg'),
   ])

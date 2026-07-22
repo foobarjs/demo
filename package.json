@@ -7,13 +7,12 @@
     "dev": "foobar serve --dev",
     "start": "foobar serve",
     "test": "foobar test",
-    "db:migrate": "foobar db migrate",
-    "db:seed": "foobar db seed",
-    "db:fresh": "foobar db fresh",
-    "db:reset": "foobar db reset"
+    "db:migrate": "foobar db:migrate",
+    "db:seed": "foobar db:seed",
+    "db:fresh": "foobar db:fresh",
+    "db:reset": "foobar db:reset"
   },
   "dependencies": {
-    "esbuild": "^0.25.0",
     "foobarjs": "file:../framework"
   }
 }

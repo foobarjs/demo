@@ -1,0 +1,715 @@
+{
+  "version": 1,
+  "tables": {
+    "attendees": {
+      "columns": {
+        "id": {
+          "type": "integer",
+          "primary": true,
+          "autoIncrement": true,
+          "nullable": false
+        },
+        "name": {
+          "type": "string",
+          "nullable": true,
+          "default": null,
+          "length": null,
+          "unique": false,
+          "enumValues": null
+        },
+        "email": {
+          "type": "string",
+          "nullable": false,
+          "default": null,
+          "length": null,
+          "unique": false,
+          "enumValues": null
+        },
+        "checked_in_at": {
+          "type": "datetime",
+          "nullable": true,
+          "default": null,
+          "length": null,
+          "unique": false,
+          "enumValues": null
+        },
+        "ticket_code": {
+          "type": "string",
+          "nullable": false,
+          "default": null,
+          "length": null,
+          "unique": true,
+          "enumValues": null
+        },
+        "order_id": {
+          "type": "integer",
+          "nullable": true,
+          "references": {
+            "table": "orders",
+            "column": "id"
+          },
+          "onDelete": null
+        },
+        "ticket_type_id": {
+          "type": "integer",
+          "nullable": true,
+          "references": {
+            "table": "ticket_types",
+            "column": "id"
+          },
+          "onDelete": null
+        },
+        "event_id": {
+          "type": "integer",
+          "nullable": true,
+          "references": {
+            "table": "events",
+            "column": "id"
+          },
+          "onDelete": null
+        },
+        "created_at": {
+          "type": "datetime",
+          "nullable": true
+        },
+        "updated_at": {
+          "type": "datetime",
+          "nullable": true
+        }
+      },
+      "indexes": [
+        {
+          "columns": [
+            "order_id"
+          ],
+          "name": null,
+          "autoFk": true
+        },
+        {
+          "columns": [
+            "ticket_type_id"
+          ],
+          "name": null,
+          "autoFk": true
+        },
+        {
+          "columns": [
+            "event_id"
+          ],
+          "name": null,
+          "autoFk": true
+        }
+      ],
+      "uniques": []
+    },
+    "audit_logs": {
+      "columns": {
+        "id": {
+          "type": "integer",
+          "primary": true,
+          "autoIncrement": true,
+          "nullable": false
+        },
+        "action": {
+          "type": "string",
+          "nullable": false,
+          "default": null,
+          "length": null,
+          "unique": false,
+          "enumValues": null
+        },
+        "model_type": {
+          "type": "string",
+          "nullable": false,
+          "default": null,
+          "length": null,
+          "unique": false,
+          "enumValues": null
+        },
+        "model_id": {
+          "type": "number",
+          "nullable": true,
+          "default": null,
+          "length": null,
+          "unique": false,
+          "enumValues": null
+        },
+        "user_id": {
+          "type": "number",
+          "nullable": true,
+          "default": null,
+          "length": null,
+          "unique": false,
+          "enumValues": null
+        },
+        "changes": {
+          "type": "text",
+          "nullable": true,
+          "default": null,
+          "length": null,
+          "unique": false,
+          "enumValues": null
+        },
+        "created_at": {
+          "type": "datetime",
+          "nullable": true
+        },
+        "updated_at": {
+          "type": "datetime",
+          "nullable": true
+        }
+      },
+      "indexes": [],
+      "uniques": []
+    },
+    "discount_codes": {
+      "columns": {
+        "id": {
+          "type": "integer",
+          "primary": true,
+          "autoIncrement": true,
+          "nullable": false
+        },
+        "code": {
+          "type": "string",
+          "nullable": false,
+          "default": null,
+          "length": null,
+          "unique": false,
+          "enumValues": null
+        },
+        "type": {
+          "type": "string",
+          "nullable": false,
+          "default": null,
+          "length": null,
+          "unique": false,
+          "enumValues": [
+            "fixed",
+            "percentage"
+          ]
+        },
+        "value": {
+          "type": "float",
+          "nullable": false,
+          "default": null,
+          "length": null,
+          "unique": false,
+          "enumValues": null
+        },
+        "max_uses": {
+          "type": "number",
+          "nullable": true,
+          "default": null,
+          "length": null,
+          "unique": false,
+          "enumValues": null
+        },
+        "used_count": {
+          "type": "number",
+          "nullable": true,
+          "default": 0,
+          "length": null,
+          "unique": false,
+          "enumValues": null
+        },
+        "expires_at": {
+          "type": "datetime",
+          "nullable": true,
+          "default": null,
+          "length": null,
+          "unique": false,
+          "enumValues": null
+        },
+        "event_id": {
+          "type": "integer",
+          "nullable": true,
+          "references": {
+            "table": "events",
+            "column": "id"
+          },
+          "onDelete": null
+        },
+        "created_at": {
+          "type": "datetime",
+          "nullable": true
+        },
+        "updated_at": {
+          "type": "datetime",
+          "nullable": true
+        }
+      },
+      "indexes": [
+        {
+          "columns": [
+            "event_id"
+          ],
+          "name": null,
+          "autoFk": true
+        }
+      ],
+      "uniques": [
+        {
+          "columns": [
+            "code",
+            "event"
+          ],
+          "name": null
+        }
+      ]
+    },
+    "events": {
+      "columns": {
+        "id": {
+          "type": "integer",
+          "primary": true,
+          "autoIncrement": true,
+          "nullable": false
+        },
+        "title": {
+          "type": "string",
+          "nullable": false,
+          "default": null,
+          "length": null,
+          "unique": false,
+          "enumValues": null
+        },
+        "slug": {
+          "type": "string",
+          "nullable": false,
+          "default": null,
+          "length": null,
+          "unique": true,
+          "enumValues": null
+        },
+        "description": {
+          "type": "text",
+          "nullable": true,
+          "default": null,
+          "length": null,
+          "unique": false,
+          "enumValues": null
+        },
+        "starts_at": {
+          "type": "datetime",
+          "nullable": false,
+          "default": null,
+          "length": null,
+          "unique": false,
+          "enumValues": null
+        },
+        "ends_at": {
+          "type": "datetime",
+          "nullable": true,
+          "default": null,
+          "length": null,
+          "unique": false,
+          "enumValues": null
+        },
+        "venue": {
+          "type": "string",
+          "nullable": true,
+          "default": null,
+          "length": null,
+          "unique": false,
+          "enumValues": null
+        },
+        "location": {
+          "type": "string",
+          "nullable": true,
+          "default": null,
+          "length": null,
+          "unique": false,
+          "enumValues": null
+        },
+        "status": {
+          "type": "string",
+          "nullable": true,
+          "default": "draft",
+          "length": null,
+          "unique": false,
+          "enumValues": [
+            "draft",
+            "published",
+            "cancelled",
+            "completed"
+          ]
+        },
+        "cover_image": {
+          "type": "image",
+          "nullable": true,
+          "default": null,
+          "length": null,
+          "unique": false,
+          "enumValues": null
+        },
+        "max_attendees": {
+          "type": "number",
+          "nullable": true,
+          "default": null,
+          "length": null,
+          "unique": false,
+          "enumValues": null
+        },
+        "speakers": {
+          "type": "json",
+          "nullable": true,
+          "default": null,
+          "length": null,
+          "unique": false,
+          "enumValues": null
+        },
+        "schedule": {
+          "type": "json",
+          "nullable": true,
+          "default": null,
+          "length": null,
+          "unique": false,
+          "enumValues": null
+        },
+        "organizer_id": {
+          "type": "integer",
+          "nullable": true,
+          "references": {
+            "table": "users",
+            "column": "id"
+          },
+          "onDelete": null
+        },
+        "created_at": {
+          "type": "datetime",
+          "nullable": true
+        },
+        "updated_at": {
+          "type": "datetime",
+          "nullable": true
+        }
+      },
+      "indexes": [
+        {
+          "columns": [
+            "organizer",
+            "status"
+          ],
+          "name": null
+        },
+        {
+          "columns": [
+            "startsAt"
+          ],
+          "name": null
+        },
+        {
+          "columns": [
+            "organizer_id"
+          ],
+          "name": null,
+          "autoFk": true
+        }
+      ],
+      "uniques": []
+    },
+    "hookeds": {
+      "columns": {
+        "id": {
+          "type": "integer",
+          "primary": true,
+          "autoIncrement": true,
+          "nullable": false
+        },
+        "name": {
+          "type": "string",
+          "nullable": false,
+          "default": null,
+          "length": null,
+          "unique": false,
+          "enumValues": null
+        },
+        "value": {
+          "type": "string",
+          "nullable": true,
+          "default": null,
+          "length": null,
+          "unique": false,
+          "enumValues": null
+        },
+        "created_at": {
+          "type": "datetime",
+          "nullable": true
+        },
+        "updated_at": {
+          "type": "datetime",
+          "nullable": true
+        }
+      },
+      "indexes": [],
+      "uniques": []
+    },
+    "orders": {
+      "columns": {
+        "id": {
+          "type": "integer",
+          "primary": true,
+          "autoIncrement": true,
+          "nullable": false
+        },
+        "order_number": {
+          "type": "string",
+          "nullable": false,
+          "default": null,
+          "length": null,
+          "unique": true,
+          "enumValues": null
+        },
+        "email": {
+          "type": "string",
+          "nullable": false,
+          "default": null,
+          "length": null,
+          "unique": false,
+          "enumValues": null
+        },
+        "name": {
+          "type": "string",
+          "nullable": false,
+          "default": null,
+          "length": null,
+          "unique": false,
+          "enumValues": null
+        },
+        "status": {
+          "type": "string",
+          "nullable": true,
+          "default": "pending",
+          "length": null,
+          "unique": false,
+          "enumValues": [
+            "pending",
+            "confirmed",
+            "cancelled",
+            "refunded"
+          ]
+        },
+        "payment_status": {
+          "type": "string",
+          "nullable": true,
+          "default": "unpaid",
+          "length": null,
+          "unique": false,
+          "enumValues": [
+            "unpaid",
+            "paid",
+            "refunded"
+          ]
+        },
+        "subtotal": {
+          "type": "float",
+          "nullable": true,
+          "default": 0,
+          "length": null,
+          "unique": false,
+          "enumValues": null
+        },
+        "discount": {
+          "type": "float",
+          "nullable": true,
+          "default": 0,
+          "length": null,
+          "unique": false,
+          "enumValues": null
+        },
+        "total": {
+          "type": "float",
+          "nullable": true,
+          "default": 0,
+          "length": null,
+          "unique": false,
+          "enumValues": null
+        },
+        "event_id": {
+          "type": "integer",
+          "nullable": true,
+          "references": {
+            "table": "events",
+            "column": "id"
+          },
+          "onDelete": null
+        },
+        "created_at": {
+          "type": "datetime",
+          "nullable": true
+        },
+        "updated_at": {
+          "type": "datetime",
+          "nullable": true
+        }
+      },
+      "indexes": [
+        {
+          "columns": [
+            "event_id"
+          ],
+          "name": null,
+          "autoFk": true
+        }
+      ],
+      "uniques": []
+    },
+    "ticket_types": {
+      "columns": {
+        "id": {
+          "type": "integer",
+          "primary": true,
+          "autoIncrement": true,
+          "nullable": false
+        },
+        "name": {
+          "type": "string",
+          "nullable": false,
+          "default": null,
+          "length": null,
+          "unique": false,
+          "enumValues": null
+        },
+        "description": {
+          "type": "text",
+          "nullable": true,
+          "default": null,
+          "length": null,
+          "unique": false,
+          "enumValues": null
+        },
+        "price": {
+          "type": "float",
+          "nullable": false,
+          "default": null,
+          "length": null,
+          "unique": false,
+          "enumValues": null
+        },
+        "quantity": {
+          "type": "number",
+          "nullable": false,
+          "default": null,
+          "length": null,
+          "unique": false,
+          "enumValues": null
+        },
+        "sold": {
+          "type": "number",
+          "nullable": true,
+          "default": 0,
+          "length": null,
+          "unique": false,
+          "enumValues": null
+        },
+        "sales_start": {
+          "type": "datetime",
+          "nullable": true,
+          "default": null,
+          "length": null,
+          "unique": false,
+          "enumValues": null
+        },
+        "sales_end": {
+          "type": "datetime",
+          "nullable": true,
+          "default": null,
+          "length": null,
+          "unique": false,
+          "enumValues": null
+        },
+        "event_id": {
+          "type": "integer",
+          "nullable": true,
+          "references": {
+            "table": "events",
+            "column": "id"
+          },
+          "onDelete": null
+        },
+        "created_at": {
+          "type": "datetime",
+          "nullable": true
+        },
+        "updated_at": {
+          "type": "datetime",
+          "nullable": true
+        }
+      },
+      "indexes": [
+        {
+          "columns": [
+            "event_id"
+          ],
+          "name": null,
+          "autoFk": true
+        }
+      ],
+      "uniques": []
+    },
+    "users": {
+      "columns": {
+        "id": {
+          "type": "integer",
+          "primary": true,
+          "autoIncrement": true,
+          "nullable": false
+        },
+        "name": {
+          "type": "string",
+          "nullable": false,
+          "default": null,
+          "length": null,
+          "unique": false,
+          "enumValues": null
+        },
+        "email": {
+          "type": "string",
+          "nullable": false,
+          "default": null,
+          "length": null,
+          "unique": true,
+          "enumValues": null
+        },
+        "password": {
+          "type": "string",
+          "nullable": false,
+          "default": null,
+          "length": null,
+          "unique": false,
+          "enumValues": null
+        },
+        "is_admin": {
+          "type": "boolean",
+          "nullable": true,
+          "default": false,
+          "length": null,
+          "unique": false,
+          "enumValues": null
+        },
+        "roles": {
+          "type": "json",
+          "nullable": true,
+          "default": null,
+          "length": null,
+          "unique": false,
+          "enumValues": [
+            "admin",
+            "organizer"
+          ]
+        },
+        "created_at": {
+          "type": "datetime",
+          "nullable": true
+        },
+        "updated_at": {
+          "type": "datetime",
+          "nullable": true
+        }
+      },
+      "indexes": [],
+      "uniques": []
+    }
+  }
+}

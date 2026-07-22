@@ -1,7 +1,7 @@
 import { test, describe, assert, before, boot } from 'foobarjs/test'
 import { Widget, formatValue } from 'foobarjs/admin'
 import Order from '../app/models/order.model.js'
-import Product from '../app/models/product.model.js'
+import Event from '../app/models/event.model.js'
 
 before(async () => {
   await boot()
@@ -11,9 +11,9 @@ describe('Admin Widget Factories', () => {
   const suiteTs = Date.now()
 
   before(async () => {
-    await Order.create({ status: 'pending', total: 100 })
-    await Order.create({ status: 'shipped', total: 200 })
-    await Order.create({ status: 'shipped', total: 300 })
+    await Order.create({ orderNumber: `ORD-W1-${suiteTs}`, email: 'w1@test.com', name: 'Widget 1', status: 'pending', total: 100 })
+    await Order.create({ orderNumber: `ORD-W2-${suiteTs}`, email: 'w2@test.com', name: 'Widget 2', status: 'confirmed', total: 200 })
+    await Order.create({ orderNumber: `ORD-W3-${suiteTs}`, email: 'w3@test.com', name: 'Widget 3', status: 'confirmed', total: 300 })
   })
 
   test('Widget.count runs count() on query', async () => {
@@ -50,7 +50,7 @@ describe('Admin Widget Factories', () => {
   })
 
   test('Widget.exists returns boolean', async () => {
-    const w = Widget.exists('has-shipped', Order.where('status', 'shipped'))
+    const w = Widget.exists('has-confirmed', Order.where('status', 'confirmed'))
     const value = await w._resolver()
     assert.strictEqual(typeof value, 'boolean')
     assert.strictEqual(value, true)

@@ -1,16 +1,19 @@
 import App from '../layouts/App.jsx'
 
-export default function Forbidden({ message, requestId }) {
+export default function Forbidden({ status, message, requestId }) {
   return (
-    <App title="403 - Forbidden">
-      <div class="container error-page" style="text-align:center; padding: 60px 20px;">
-        <h1 style="font-size: 48px; color:#dc2626; margin:0;">403</h1>
-        <h2 style="margin: 12px 0;">Forbidden</h2>
-        <p style="color:#64748b;">{message || "You don't have permission to access this page."}</p>
-        <p><a href="/" class="btn btn-primary">Go back home</a></p>
-        {requestId && (
-          <p style="margin-top: 40px; font-size: 12px; color:#94a3b8; font-family: monospace;">Request ID: {requestId}</p>
-        )}
+    <App title={`${status || 403} · Forbidden`}>
+      <div class="error-shell">
+        <div class="error-panel">
+          <div class="error-code">{status || 403}</div>
+          <h1>You don't have access to this</h1>
+          <p class="muted">{message || "This action is restricted. Sign in with an account that has permission."}</p>
+          <div class="error-actions">
+            <a href="/login" class="btn btn-primary">Sign in</a>
+            <a href="/" class="btn btn-ghost">Back to home</a>
+          </div>
+          {requestId && <p class="error-request-id">Request ID: <code>{requestId}</code></p>}
+        </div>
       </div>
     </App>
   )

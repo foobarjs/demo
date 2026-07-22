@@ -1,7 +1,7 @@
 import { test, describe, assert, before, boot } from 'foobarjs/test'
 import { PersonalAccessToken } from 'foobarjs/auth'
 import User from '../app/models/user.model.js'
-import Product from '../app/models/product.model.js'
+import Event from '../app/models/event.model.js'
 
 let _adminUser = null
 let _adminToken = null
@@ -31,57 +31,54 @@ function adminRequest(request) {
 }
 
 describe('Admin — form validation', () => {
-  test('creating a product with a duplicate slug re-renders form with error (does NOT silently redirect)', async ({ request }) => {
+  test('creating an event with a duplicate slug re-renders form with error (does NOT silently redirect)', async ({ request }) => {
     const admin = adminRequest(request)
     const ts = Date.now()
     const slug = `dup-slug-${ts}`
 
-    // Seed a product with the slug we'll try to duplicate.
-    const first = await admin.post('/admin/products').form({
-      name: `Original ${ts}`,
+    // Seed an event with the slug we'll try to duplicate.
+    const first = await admin.post('/admin/events').form({
+      title: `Original ${ts}`,
       slug,
-      price: '10.00',
-      stock: '1',
-      published: 'true',
+      startsAt: new Date(),
+      status: 'draft',
     })
     assert.strictEqual(first.status, 302, 'first create should succeed with redirect')
 
     const dup = await admin
-      .post('/admin/products')
+      .post('/admin/events')
       .set('Accept', 'text/html')
       .form({
-        name: `Duplicate ${ts}`,
+        title: `Duplicate ${ts}`,
         slug,
-        price: '20.00',
-        stock: '2',
-        published: 'true',
+        startsAt: new Date(),
+        status: 'draft',
       })
 
     assert.strictEqual(dup.status, 200, 'duplicate should re-render form (not redirect)')
     const text = await dup.text()
-    assert.ok(text.includes('New Product') || text.includes('form'), 'should re-render the form')
+    assert.ok(text.includes('New Event') || text.includes('form'), 'should re-render the form')
     assert.ok(/already been taken|already exists|unique/i.test(text),
       `should surface the unique constraint error, got: ${text.slice(0, 600)}`)
     // The Slug field should be next to the input, not just the summary.
     assert.ok(text.includes('is-invalid') || text.includes('has-error') || text.includes('alert-danger'),
       'should highlight the invalid field or show a summary panel')
     // Old input should be preserved so the user doesn't retype the whole form.
-    assert.ok(text.includes(`Duplicate ${ts}`), 'should preserve the entered name')
-    assert.ok(text.includes(slug), 'should preserve the entered slug')
+    assert.ok(text.includes(`Duplicate ${ts}`), 'should preserve the entered title')
   })
 
-  test('creating a product without required name shows validation error', async ({ request }) => {
+  test('creating an event without required title shows validation error', async ({ request }) => {
     const admin = adminRequest(request)
     const ts = Date.now()
 
     const res = await admin
-      .post('/admin/products')
+      .post('/admin/events')
       .set('Accept', 'text/html')
       .form({
-        name: '',
-        slug: `no-name-${ts}`,
-        price: '10.00',
-        stock: '1',
+        title: '',
+        slug: `no-title-${ts}`,
+        startsAt: new Date(),
+        status: 'draft',
       })
 
     assert.strictEqual(res.status, 200, 'should re-render form on validation failure')
@@ -90,21 +87,34 @@ describe('Admin — form validation', () => {
       `should include a required message, got: ${text.slice(0, 400)}`)
   })
 
-  test('updating a product to a used slug shows validation error', async ({ request }) => {
+  test('updating an event to a used slug shows validation error', async ({ request }) => {
     const admin = adminRequest(request)
     const ts = Date.now()
 
-    const a = await Product.create({ name: `A ${ts}`, slug: `slug-a-${ts}`, price: 5, stock: 1 })
-    const b = await Product.create({ name: `B ${ts}`, slug: `slug-b-${ts}`, price: 5, stock: 1 })
+    // Create events through admin form to avoid ORM entity manager cross-contamination
+    const slugA = `slug-a-${ts}`
+    const slugB = `slug-b-${ts}`
+
+    await admin.post('/admin/events').form({
+      title: `A ${ts}`, slug: slugA, startsAt: new Date(), status: 'draft',
+    })
+    await admin.post('/admin/events').form({
+      title: `B ${ts}`, slug: slugB, startsAt: new Date(), status: 'draft',
+    })
+
+    const a = await Event.where('slug', slugA).first()
+    const b = await Event.where('slug', slugB).first()
+    assert.ok(a, 'Event A should exist')
+    assert.ok(b, 'Event B should exist')
 
     const res = await admin
-      .put(`/admin/products/${b.id}`)
+      .put(`/admin/events/${b.id}`)
       .set('Accept', 'text/html')
       .form({
-        name: b.name,
+        title: b.title,
         slug: a.slug, // take A's slug
-        price: '5.00',
-        stock: '1',
+        startsAt: b.startsAt,
+        status: 'draft',
       })
     assert.strictEqual(res.status, 200, 'should re-render form on unique violation')
     const text = await res.text()
@@ -116,13 +126,13 @@ describe('Admin — form validation', () => {
     const admin = adminRequest(request)
 
     const res = await admin
-      .post('/admin/products')
+      .post('/admin/events')
       .set('Accept', 'text/html')
       .form({
-        name: '',
+        title: '',
         slug: '',
-        price: '',
-        stock: '',
+        startsAt: '',
+        status: '',
       })
 
     assert.strictEqual(res.status, 200)
@@ -132,7 +142,7 @@ describe('Admin — form validation', () => {
   })
 
   test('submitting empty value for a Date field does NOT silently redirect to home', async ({ request }) => {
-    // Regression: MikroORM's setter throws "Trying to set X.paid_at of type 'Date'
+    // Regression: MikroORM's setter throws "Trying to set X.starts_at of type 'Date'
     // to '' of type 'string'". The admin used to silently redirect to '/' with
     // an empty flash payload. The framework now either:
     //   (a) normalises the empty string to null at the admin layer and saves,
@@ -147,7 +157,7 @@ describe('Admin — form validation', () => {
     let order = await Order.query().orderBy('id', 'desc').first()
     if (!order) {
       try {
-        order = await Order.create({ status: 'pending', total: 10 })
+        order = await Order.create({ orderNumber: `ORD-DATE-${Date.now()}`, email: 'date@test.com', name: 'Date Test', status: 'pending', total: 10 })
       } catch {
         return
       }
@@ -157,10 +167,11 @@ describe('Admin — form validation', () => {
       .put(`/admin/orders/${order.id}`)
       .set('Accept', 'text/html')
       .form({
-        status: 'paid',
+        orderNumber: order.orderNumber,
+        email: order.email,
+        name: order.name,
+        status: 'confirmed',
         total: '10',
-        paidAt: '',
-        shippingAddress: '',
       })
 
     // Any of: 200 (form re-render with errors), 302 to /admin/orders (success),

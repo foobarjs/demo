@@ -1,9 +1,8 @@
 import { test, describe, assert, before, boot } from 'foobarjs/test'
 import { PersonalAccessToken } from 'foobarjs/auth'
 import User from '../app/models/user.model.js'
-import Product from '../app/models/product.model.js'
-import Category from '../app/models/category.model.js'
-import Tag from '../app/models/tag.model.js'
+import Event from '../app/models/event.model.js'
+import TicketType from '../app/models/ticket-type.model.js'
 import Order from '../app/models/order.model.js'
 
 before(async () => {
@@ -69,49 +68,19 @@ describe('Admin Panel', () => {
     assert.strictEqual(res.headers.get('location'), '/')
   })
 
-  test('allows users with roles to enter admin', async ({ request }) => {
-    const viewer = await roleRequest(request, ['viewer'])
-    const res = await viewer.get('/admin')
-    assert.strictEqual(res.status, 200)
-  })
-
-  test('viewer can view permitted resource', async ({ request }) => {
-    const viewer = await roleRequest(request, ['viewer'])
-    const res = await viewer.get('/admin/products')
-    assert.strictEqual(res.status, 200)
-  })
-
-  test('viewer cannot view unauthorized resource', async ({ request }) => {
-    const viewer = await roleRequest(request, ['viewer'])
-    const res = await viewer.get('/admin/orders')
+  // strictAdmin: only isAdmin users can enter /admin. Organizers use /organizer/*.
+  test('denies organizer (roles-only) from entering /admin under strictAdmin', async ({ request }) => {
+    const organizer = await roleRequest(request, ['organizer'])
+    const res = await organizer.get('/admin')
     assert.strictEqual(res.status, 302)
-    assert.strictEqual(res.headers.get('location'), '/admin')
+    assert.strictEqual(res.headers.get('location'), '/')
   })
 
-  test('viewer cannot create products', async ({ request }) => {
-    const viewer = await roleRequest(request, ['viewer'])
-    const res = await viewer.get('/admin/products/create')
+  test('denies organizer from admin resource routes under strictAdmin', async ({ request }) => {
+    const organizer = await roleRequest(request, ['organizer'])
+    const res = await organizer.get('/admin/events')
     assert.strictEqual(res.status, 302)
-    assert.strictEqual(res.headers.get('location'), '/admin')
-  })
-
-  test('editor can view and create products', async ({ request }) => {
-    const editor = await roleRequest(request, ['editor'])
-    const listRes = await editor.get('/admin/products')
-    assert.strictEqual(listRes.status, 200)
-    const createRes = await editor.get('/admin/products/create')
-    assert.strictEqual(createRes.status, 200)
-  })
-
-  test('editor cannot delete products', async ({ request }) => {
-    const editor = await roleRequest(request, ['editor'])
-    const product = await Product.query().first()
-    assert.ok(product)
-    const res = await editor.delete(`/admin/products/${product.id}`)
-    assert.strictEqual(res.status, 302)
-    assert.strictEqual(res.headers.get('location'), '/admin')
-    const stillThere = await Product.find(product.id)
-    assert.ok(stillThere)
+    assert.strictEqual(res.headers.get('location'), '/')
   })
 
   test('dashboard renders with Bootstrap layout and branding', async ({ request }) => {
@@ -121,7 +90,7 @@ describe('Admin Panel', () => {
     const text = await res.text()
     assert.ok(text.includes('<!DOCTYPE html>'))
     assert.ok(text.includes('Dashboard'))
-    assert.ok(text.includes('Foobar Shop Admin'))
+    assert.ok(text.includes('Foobar Events Admin'))
     assert.ok(text.includes('bootstrap.min.css'))
     assert.ok(text.includes('bootstrap.bundle.min.js'))
     assert.ok(!text.includes('&lt;img'), 'Dashboard should not escape widget HTML')
@@ -131,7 +100,8 @@ describe('Admin Panel', () => {
 
   test('dashboard renders resource widgets', async ({ request }) => {
     const admin = await adminRequest(request)
-    await Order.create({ status: 'pending', total: 10 })
+    const ts = Date.now()
+    await Order.create({ orderNumber: `ORD-WIDGET-${ts}`, email: 'w@test.com', name: 'Widget Test', status: 'pending', total: 10 })
     const res = await admin.get('/admin')
     assert.strictEqual(res.status, 200)
     const text = await res.text()
@@ -143,15 +113,15 @@ describe('Admin Panel', () => {
   test('global search returns results across resources', async ({ request }) => {
     const admin = await adminRequest(request)
     const timestamp = Date.now()
-    const slug = `search-cat-${timestamp}`
-    await Category.create({ name: `Search Category ${timestamp}`, slug })
+    const slug = `search-event-${timestamp}`
+    await Event.create({ title: `Search Event ${timestamp}`, slug, startsAt: new Date(), status: 'draft' })
 
-    const res = await admin.get(`/admin/search?q=${encodeURIComponent(`Search Category ${timestamp}`)}`)
+    const res = await admin.get(`/admin/search?q=${encodeURIComponent(`Search Event ${timestamp}`)}`)
     assert.strictEqual(res.status, 200)
     const text = await res.text()
     assert.ok(text.includes('Search Results'))
-    assert.ok(text.includes(`Search Category ${timestamp}`))
-    assert.ok(text.includes('/admin/categories'))
+    assert.ok(text.includes(`Search Event ${timestamp}`))
+    assert.ok(text.includes('/admin/events'))
   })
 
   test('order form renders with sections', async ({ request }) => {
@@ -161,12 +131,12 @@ describe('Admin Panel', () => {
     const text = await res.text()
     assert.ok(text.includes('Customer'))
     assert.ok(text.includes('Payment'))
-    assert.ok(text.includes('Shipping'))
   })
 
   test('bulk delete removes selected records', async ({ request }) => {
     const admin = await adminRequest(request)
-    const order = await Order.create({ status: 'pending', total: 5 })
+    const ts = Date.now()
+    const order = await Order.create({ orderNumber: `ORD-BULK-${ts}`, email: 'bulk@test.com', name: 'Bulk Test', status: 'pending', total: 5 })
 
     const res = await admin.post('/admin/orders/bulk').form({
       action: 'delete',
@@ -180,34 +150,26 @@ describe('Admin Panel', () => {
 
   test('inline action updates order status', async ({ request }) => {
     const admin = await adminRequest(request)
-    const order = await Order.create({ status: 'pending', total: 5 })
+    const ts = Date.now()
+    const order = await Order.create({ orderNumber: `ORD-INLINE-${ts}`, email: 'inline@test.com', name: 'Inline Test', status: 'pending', total: 5 })
 
-    const res = await admin.post(`/admin/orders/${order.id}/action/ship`)
+    const res = await admin.post(`/admin/orders/${order.id}/action/confirm`)
     assert.strictEqual(res.status, 302)
     const updated = await Order.find(order.id)
-    assert.strictEqual(updated.status, 'shipped')
+    assert.strictEqual(updated.status, 'confirmed')
   })
 
-  test('viewer cannot run the ship inline action (authorization enforced)', async ({ request }) => {
-    const viewer = await roleRequest(request, ['viewer'])
-    const order = await Order.create({ status: 'pending', total: 5 })
+  test('strictAdmin blocks organizer from admin actions entirely (redirected off /admin)', async ({ request }) => {
+    const organizer = await roleRequest(request, ['organizer'])
+    const ts = Date.now()
+    const order = await Order.create({ orderNumber: `ORD-ORG-${ts}`, email: 'org@test.com', name: 'Org Test', status: 'pending', total: 5 })
 
-    const res = await viewer.post(`/admin/orders/${order.id}/action/ship`)
+    const res = await organizer.post(`/admin/orders/${order.id}/action/confirm`)
     assert.strictEqual(res.status, 302)
-    assert.strictEqual(res.headers.get('location'), '/admin')
+    assert.strictEqual(res.headers.get('location'), '/')
 
     const unchanged = await Order.find(order.id)
     assert.strictEqual(unchanged.status, 'pending', 'a forbidden action must not mutate the record')
-  })
-
-  test('editor can run the ship inline action (default edit permission)', async ({ request }) => {
-    const editor = await roleRequest(request, ['editor'])
-    const order = await Order.create({ status: 'pending', total: 5 })
-
-    const res = await editor.post(`/admin/orders/${order.id}/action/ship`)
-    assert.strictEqual(res.status, 302)
-    const updated = await Order.find(order.id)
-    assert.strictEqual(updated.status, 'shipped')
   })
 
   test('serves local admin assets', async ({ request }) => {
@@ -222,11 +184,11 @@ describe('Admin Panel', () => {
 
   test('model list renders with records', async ({ request }) => {
     const admin = await adminRequest(request)
-    const res = await admin.get('/admin/products')
+    const res = await admin.get('/admin/events')
     assert.strictEqual(res.status, 200)
     const text = await res.text()
-    assert.ok(text.includes('Products'))
-    assert.ok(text.includes('New Product'))
+    assert.ok(text.includes('Events'))
+    assert.ok(text.includes('New Event'))
     assert.ok(!text.includes('&lt;i class'), 'List icons should not be escaped')
     assert.ok(!text.includes('pagination.buildQuery'), 'Pagination should generate real links')
   })
@@ -235,9 +197,9 @@ describe('Admin Panel', () => {
     const admin = await adminRequest(request)
     const ts = Date.now()
     for (let i = 0; i < 10; i++) {
-      await Product.create({ name: `Paginate ${ts}-${i}`, slug: `paginate-${ts}-${i}`, price: 10, stock: 1 })
+      await Event.create({ title: `Paginate ${ts}-${i}`, slug: `paginate-${ts}-${i}`, startsAt: new Date(), status: 'draft' })
     }
-    const res = await admin.get('/admin/products?perPage=5')
+    const res = await admin.get('/admin/events?perPage=5')
     assert.strictEqual(res.status, 200)
     const text = await res.text()
     assert.ok(!text.includes('[object Object]'), 'Pagination should not render [object Object]')
@@ -249,39 +211,37 @@ describe('Admin Panel', () => {
 
   test('create form page renders with belongsTo combobox', async ({ request }) => {
     const admin = await adminRequest(request)
-    const cat = await Category.create({ name: 'Test Category', slug: `test-cat-${Date.now()}` })
-    assert.ok(cat)
+    const ts = Date.now()
+    const user = await User.create({ name: 'Organizer User', email: `organizer-${ts}@example.com`, password: 'secret123' })
+    assert.ok(user)
 
-    const res = await admin.get('/admin/products/create')
+    const res = await admin.get('/admin/events/create')
     assert.strictEqual(res.status, 200)
     const text = await res.text()
-    assert.ok(text.includes('New Product'))
+    assert.ok(text.includes('New Event'))
     assert.ok(text.includes('<fb-combobox'), 'belongsTo field should render as combobox')
-    assert.ok(text.includes('endpoint="/admin/categories/lookup"'), 'combobox should point at the lookup endpoint')
+    assert.ok(text.includes('endpoint="/admin/users/lookup"'), 'combobox should point at the lookup endpoint')
   })
 
   test('creates a record with belongsTo relation', async ({ request }) => {
     const admin = await adminRequest(request)
-    const cat = await Category.create({ name: 'Test Rel Cat', slug: `rel-cat-${Date.now()}` })
-    assert.ok(cat.id)
-    const timestamp = Date.now()
-    const slug = `rel-test-${timestamp}`
+    const ts = Date.now()
+    const event = await Event.create({ title: `Rel Event ${ts}`, slug: `rel-event-${ts}`, startsAt: new Date(), status: 'draft' })
+    assert.ok(event.id)
 
     const res = await admin
-      .post('/admin/products')
+      .post('/admin/ticket_types')
       .form({
-        name: `Rel Test ${timestamp}`,
-        slug,
+        name: `Rel Ticket ${ts}`,
         price: '99.99',
-        stock: '5',
-        published: 'true',
-        category: String(cat.id),
+        quantity: '100',
+        event: String(event.id),
       })
 
     assert.strictEqual(res.status, 302)
-    const product = await Product.where('slug', slug).first()
-    assert.ok(product)
-    assert.strictEqual(product.category, cat.id)
+    const ticketType = await TicketType.where('name', `Rel Ticket ${ts}`).first()
+    assert.ok(ticketType)
+    assert.strictEqual(ticketType.event, event.id)
   })
 
   test('creates a record through admin form', async ({ request }) => {
@@ -290,30 +250,29 @@ describe('Admin Panel', () => {
     const slug = `admin-created-${timestamp}`
 
     const res = await admin
-      .post('/admin/products')
+      .post('/admin/events')
       .form({
-        name: `Admin Created ${timestamp}`,
+        title: `Admin Created ${timestamp}`,
         slug,
-        price: '29.99',
-        stock: '10',
-        published: 'true',
+        startsAt: new Date(),
+        status: 'draft',
       })
 
     assert.strictEqual(res.status, 302)
-    const product = await Product.where('slug', slug).first()
-    assert.ok(product)
-    assert.strictEqual(product.price, 29.99)
+    const event = await Event.where('slug', slug).first()
+    assert.ok(event)
+    assert.strictEqual(event.title, `Admin Created ${timestamp}`)
   })
 
   test('shows a record detail page', async ({ request }) => {
     const admin = await adminRequest(request)
-    const product = await Product.query().first()
-    assert.ok(product)
+    const event = await Event.query().first()
+    assert.ok(event)
 
-    const res = await admin.get(`/admin/products/${product.id}`)
+    const res = await admin.get(`/admin/events/${event.id}`)
     assert.strictEqual(res.status, 200)
     const text = await res.text()
-    assert.ok(text.includes(product.name))
+    assert.ok(text.includes(event.title))
   })
 
   test('flash old/errors payloads do not leak into alerts', async ({ request }) => {
@@ -322,14 +281,14 @@ describe('Admin Panel', () => {
     const bad = await admin
       .post('/admin/orders')
       .set('Accept', 'text/html')
-      .form({ user: '', status: 'pending', total: '0', paidAt: '', shippingAddress: '' })
+      .form({ name: '', email: '', orderNumber: '', status: 'pending', total: '0' })
 
     assert.ok(bad.status === 200 || bad.status === 302, `expected 200 or 302, got ${bad.status}`)
 
     const listing = await admin.get('/admin/orders')
     const text = await listing.text()
 
-    assert.ok(!text.includes('"shippingAddress":"'), 'form body should not leak into alert')
+    assert.ok(!text.includes('"orderNumber":"'), 'form body should not leak into alert')
     assert.ok(!text.match(/alert[^>]*>[^<]*\{\}[^<]*<\/div>/), 'empty {} errors should not render as alert')
   })
 
@@ -339,91 +298,90 @@ describe('Admin Panel', () => {
     const slug = `flash-clear-${ts}`
 
     const create = await admin
-      .post('/admin/categories')
-      .form({ name: `Flash Clear ${ts}`, slug })
+      .post('/admin/events')
+      .form({ title: `Flash Clear ${ts}`, slug, startsAt: new Date(), status: 'draft' })
     assert.strictEqual(create.status, 302)
 
-    const first = await admin.get('/admin/categories')
+    const first = await admin.get('/admin/events')
     const t1 = await first.text()
-    assert.ok(/alert-success[\s\S]{0,300}?Category created/.test(t1), 'first load should show flash')
+    assert.ok(/alert-success[\s\S]{0,300}?Event created/.test(t1), 'first load should show flash')
 
-    const second = await admin.get('/admin/categories')
+    const second = await admin.get('/admin/events')
     const t2 = await second.text()
-    assert.ok(!/alert-success[\s\S]{0,300}?Category created/.test(t2), 'second load should NOT show flash')
+    assert.ok(!/alert-success[\s\S]{0,300}?Event created/.test(t2), 'second load should NOT show flash')
   })
 
   test('edit form page renders with belongsTo select pre-selected', async ({ request }) => {
     const admin = await adminRequest(request)
-    const cat = await Category.create({ name: 'Edit Cat', slug: `edit-cat-${Date.now()}` })
-    const timestamp = Date.now()
-    const slug = `edit-test-${timestamp}`
+    const ts = Date.now()
+    const organizer = await User.create({ name: `Edit Organizer ${ts}`, email: `edit-org-${ts}@example.com`, password: 'secret123' })
 
     const createRes = await admin
-      .post('/admin/products')
+      .post('/admin/events')
       .form({
-        name: `Edit Test ${timestamp}`,
-        slug,
-        price: '49.99',
-        stock: '3',
-        published: 'true',
-        category: String(cat.id),
+        title: `Edit Test ${ts}`,
+        slug: `edit-test-${ts}`,
+        startsAt: new Date(),
+        status: 'draft',
+        organizer: String(organizer.id),
       })
     assert.strictEqual(createRes.status, 302)
-    const product = await Product.where('slug', slug).first()
-    assert.ok(product)
+    const event = await Event.where('slug', `edit-test-${ts}`).first()
+    assert.ok(event)
 
-    const editRes = await admin.get(`/admin/products/${product.id}/edit`)
+    const editRes = await admin.get(`/admin/events/${event.id}/edit`)
     assert.strictEqual(editRes.status, 200)
     const text = await editRes.text()
-    assert.ok(text.includes('Edit Product'))
-    assert.ok(text.includes(cat.name))
+    assert.ok(text.includes('Edit Event'))
+    assert.ok(text.includes(organizer.name))
   })
 
   test('edits a record through admin form', async ({ request }) => {
     const admin = await adminRequest(request)
-    const product = await Product.query().first()
-    assert.ok(product)
+    const event = await Event.query().first()
+    assert.ok(event)
 
-    const expectedStock = product.stock + 1
+    const newTitle = `Updated ${Date.now()}`
     const res = await admin
-      .put(`/admin/products/${product.id}`)
+      .put(`/admin/events/${event.id}`)
       .form({
-        name: `Updated ${Date.now()}`,
-        slug: product.slug,
-        price: String(product.price),
-        stock: String(expectedStock),
+        title: newTitle,
+        slug: event.slug,
+        startsAt: event.startsAt,
+        status: event.status,
       })
 
     assert.strictEqual(res.status, 302)
-    const updated = await Product.find(product.id)
-    assert.strictEqual(updated.stock, expectedStock)
+    const updated = await Event.find(event.id)
+    assert.strictEqual(updated.title, newTitle)
   })
 
   test('deletes a record', async ({ request }) => {
     const admin = await adminRequest(request)
-    const product = await Product.query().orderBy('id', 'desc').first()
-    assert.ok(product)
+    const event = await Event.query().orderBy('id', 'desc').first()
+    assert.ok(event)
 
-    const res = await admin.delete(`/admin/products/${product.id}`)
+    const res = await admin.delete(`/admin/events/${event.id}`)
     assert.strictEqual(res.status, 302)
-    const gone = await Product.find(product.id)
+    const gone = await Event.find(event.id)
     assert.strictEqual(gone, null)
   })
 
   test('search filters list results', async ({ request }) => {
     const admin = await adminRequest(request)
     const ts = Date.now()
-    const product = await Product.create({
-      name: `SearchHit ${ts}`,
+    const event = await Event.create({
+      title: `SearchHit ${ts}`,
       slug: `search-hit-${ts}`,
-      price: 1,
+      startsAt: new Date(),
+      status: 'draft',
     })
 
     const q = `SearchHit ${ts}`
-    const res = await admin.get(`/admin/products?q=${encodeURIComponent(q)}`)
+    const res = await admin.get(`/admin/events?q=${encodeURIComponent(q)}`)
     assert.strictEqual(res.status, 200)
     const text = await res.text()
-    assert.ok(text.includes(product.name))
+    assert.ok(text.includes(event.title))
   })
 
   test('failed jobs page renders', async ({ request }) => {
@@ -440,20 +398,19 @@ describe('Admin Panel', () => {
     const slug = `img-upload-${timestamp}`
 
     const formData = new FormData()
-    formData.append('name', `Image Test ${timestamp}`)
+    formData.append('title', `Image Test ${timestamp}`)
     formData.append('slug', slug)
-    formData.append('price', '19.99')
-    formData.append('stock', '5')
-    formData.append('published', 'true')
+    formData.append('startsAt', new Date())
+    formData.append('status', 'draft')
     const blob = new Blob(['fake-image-data'], { type: 'image/png' })
-    formData.append('image', blob, 'test.png')
+    formData.append('coverImage', blob, 'test.png')
 
-    const res = await admin.post('/admin/products').send(formData)
+    const res = await admin.post('/admin/events').send(formData)
     assert.strictEqual(res.status, 302)
-    const product = await Product.where('slug', slug).first()
-    assert.ok(product)
-    assert.ok(product.image, 'Product should have an image path')
-    assert.ok(product.image.startsWith('/storage/'), `Image path should start with /storage/, got ${product.image}`)
+    const event = await Event.where('slug', slug).first()
+    assert.ok(event)
+    assert.ok(event.coverImage, 'Event should have a cover image path')
+    assert.ok(event.coverImage.startsWith('/storage/'), `Image path should start with /storage/, got ${event.coverImage}`)
   })
 
   test('updates a record with image upload', async ({ request }) => {
@@ -461,30 +418,29 @@ describe('Admin Panel', () => {
     const timestamp = Date.now()
     const slug = `img-update-${timestamp}`
 
-    const product = await Product.create({
-      name: `Img Update ${timestamp}`,
+    const event = await Event.create({
+      title: `Img Update ${timestamp}`,
       slug,
-      price: 15.00,
-      stock: 2,
+      startsAt: new Date(),
+      status: 'draft',
     })
-    assert.ok(product)
-    assert.strictEqual(product.image, null)
+    assert.ok(event)
+    assert.strictEqual(event.coverImage, null)
 
     const formData = new FormData()
-    formData.append('name', product.name)
-    formData.append('slug', product.slug)
-    formData.append('price', String(product.price))
-    formData.append('stock', String(product.stock))
-    formData.append('published', 'true')
+    formData.append('title', event.title)
+    formData.append('slug', event.slug)
+    formData.append('startsAt', event.startsAt)
+    formData.append('status', event.status)
     const blob = new Blob(['updated-image-data'], { type: 'image/jpeg' })
-    formData.append('image', blob, 'update.jpg')
+    formData.append('coverImage', blob, 'update.jpg')
 
-    const res = await admin.put(`/admin/products/${product.id}`).send(formData)
+    const res = await admin.put(`/admin/events/${event.id}`).send(formData)
     assert.strictEqual(res.status, 302)
-    const updated = await Product.find(product.id)
-    assert.ok(updated.image, 'Updated product should have an image path')
-    assert.ok(updated.image.startsWith('/storage/'))
-    assert.ok(updated.image.endsWith('.jpg'))
+    const updated = await Event.find(event.id)
+    assert.ok(updated.coverImage, 'Updated event should have a cover image path')
+    assert.ok(updated.coverImage.startsWith('/storage/'))
+    assert.ok(updated.coverImage.endsWith('.jpg'))
   })
 
   test('removes an image from a record', async ({ request }) => {
@@ -492,139 +448,40 @@ describe('Admin Panel', () => {
     const timestamp = Date.now()
     const slug = `img-remove-${timestamp}`
 
-    const product = await Product.create({
-      name: `Img Remove ${timestamp}`,
+    const event = await Event.create({
+      title: `Img Remove ${timestamp}`,
       slug,
-      price: 25.00,
-      stock: 0,
-      image: '/storage/old-image.png',
+      startsAt: new Date(),
+      status: 'draft',
+      coverImage: '/storage/old-image.png',
     })
-    assert.ok(product)
-    assert.strictEqual(product.image, '/storage/old-image.png')
+    assert.ok(event)
+    assert.strictEqual(event.coverImage, '/storage/old-image.png')
 
     const formData = new FormData()
-    formData.append('name', product.name)
-    formData.append('slug', product.slug)
-    formData.append('price', String(product.price))
-    formData.append('stock', String(product.stock))
-    formData.append('published', 'true')
-    formData.append('image_delete', '1')
+    formData.append('title', event.title)
+    formData.append('slug', event.slug)
+    formData.append('startsAt', event.startsAt)
+    formData.append('status', event.status)
+    formData.append('coverImage_delete', '1')
 
-    const res = await admin.put(`/admin/products/${product.id}`).send(formData)
+    const res = await admin.put(`/admin/events/${event.id}`).send(formData)
     assert.strictEqual(res.status, 302)
-    const updated = await Product.find(product.id)
-    assert.strictEqual(updated.image, null, 'Image should be null after removal')
+    const updated = await Event.find(event.id)
+    assert.strictEqual(updated.coverImage, null, 'Image should be null after removal')
   })
 
-  test('creates a product with tags via admin', async ({ request }) => {
+  test('exports events as CSV', async ({ request }) => {
     const admin = await adminRequest(request)
-    const timestamp = Date.now()
-    const tag1 = await Tag.create({ name: `Tag A ${timestamp}`, slug: `tag-a-${timestamp}` })
-    const tag2 = await Tag.create({ name: `Tag B ${timestamp}`, slug: `tag-b-${timestamp}` })
-    const slug = `tag-product-${timestamp}`
-
-    const formData = new FormData()
-    formData.append('name', `Tag Product ${timestamp}`)
-    formData.append('slug', slug)
-    formData.append('price', '39.99')
-    formData.append('stock', '7')
-    formData.append('published', 'true')
-    formData.append('tags[]', String(tag1.id))
-    formData.append('tags[]', String(tag2.id))
-
-    const res = await admin.post('/admin/products').send(formData)
-    assert.strictEqual(res.status, 302)
-
-    const product = await Product.with('tags').where('slug', slug).first()
-    assert.ok(product)
-    assert.ok(Array.isArray(product.tags), 'Product.tags should be an array')
-    assert.strictEqual(product.tags.length, 2, 'Product should have 2 tags')
-    const tagNames = product.tags.map(t => t.name).sort()
-    assert.ok(tagNames.includes(tag1.name))
-    assert.ok(tagNames.includes(tag2.name))
-  })
-
-  test('updates product tags via admin', async ({ request }) => {
-    const admin = await adminRequest(request)
-    const timestamp = Date.now()
-    const tag1 = await Tag.create({ name: `Tag C ${timestamp}`, slug: `tag-c-${timestamp}` })
-    const tag2 = await Tag.create({ name: `Tag D ${timestamp}`, slug: `tag-d-${timestamp}` })
-    const slug = `tag-update-${timestamp}`
-
-    const product = await Product.create({
-      name: `Tag Update ${timestamp}`,
-      slug,
-      price: 10.00,
-      stock: 1,
-      published: true,
-      tags: [tag1.id],
-    })
-    assert.ok(product)
-
-    const formData = new FormData()
-    formData.append('name', product.name)
-    formData.append('slug', product.slug)
-    formData.append('price', String(product.price))
-    formData.append('stock', String(product.stock))
-    formData.append('published', 'true')
-    formData.append('tags', String(tag2.id))
-
-    const res = await admin.put(`/admin/products/${product.id}`).send(formData)
-    assert.strictEqual(res.status, 302)
-
-    const updated = await Product.with('tags').find(product.id)
-    assert.ok(updated)
-    assert.ok(Array.isArray(updated.tags), 'Updated.tags should be an array')
-    assert.strictEqual(updated.tags.length, 1, 'Should have exactly 1 tag after update')
-    assert.strictEqual(updated.tags[0].name, tag2.name)
-  })
-
-  test('exports products as CSV', async ({ request }) => {
-    const admin = await adminRequest(request)
-    const res = await admin.get('/admin/products/export')
+    const res = await admin.get('/admin/events/export')
     assert.strictEqual(res.status, 200)
     const text = await res.text()
-    assert.ok(text.includes('Name'), 'CSV should have Name column')
-    assert.ok(text.includes('Price'), 'CSV should have Price column')
-    assert.ok(text.includes('Stock'), 'CSV should have Stock column')
+    assert.ok(text.includes('Title'), 'CSV should have Title column')
+    assert.ok(text.includes('Status'), 'CSV should have Status column')
     assert.ok(text.match(/\n.+,/), 'CSV should have at least one data row')
     assert.ok(res.headers.get('Content-Type').includes('text/csv'))
-    assert.ok(res.headers.get('Content-Disposition').includes('products'), 'filename should contain products')
+    assert.ok(res.headers.get('Content-Disposition').includes('events'), 'filename should contain events')
     assert.ok(res.headers.get('Content-Disposition').includes('.csv'), 'filename should end with .csv')
-  })
-
-  test('clears all tags from a product', async ({ request }) => {
-    const admin = await adminRequest(request)
-    const timestamp = Date.now()
-    const tag = await Tag.create({ name: `Tag E ${timestamp}`, slug: `tag-e-${timestamp}` })
-    const slug = `tag-clear-${timestamp}`
-
-    const product = await Product.create({
-      name: `Tag Clear ${timestamp}`,
-      slug,
-      price: 5.00,
-      stock: 0,
-      published: true,
-      tags: [tag.id],
-    })
-    assert.ok(product)
-    assert.strictEqual(product.tags.length, 1)
-
-    const formData = new FormData()
-    formData.append('name', product.name)
-    formData.append('slug', product.slug)
-    formData.append('price', String(product.price))
-    formData.append('stock', String(product.stock))
-    formData.append('published', 'true')
-    formData.append('tags', '')
-
-    const res = await admin.put(`/admin/products/${product.id}`).send(formData)
-    assert.strictEqual(res.status, 302)
-
-    const updated = await Product.with('tags').find(product.id)
-    assert.ok(updated)
-    assert.ok(Array.isArray(updated.tags))
-    assert.strictEqual(updated.tags.length, 0, 'Tags should be cleared')
   })
 
   test('serves admin.css and admin.js', async ({ request }) => {
@@ -676,17 +533,17 @@ describe('Admin Panel', () => {
     const admin = await adminRequest(request)
     const timestamp = Date.now()
     const slug = `json-search-${timestamp}`
-    await Category.create({ name: `JSON Search ${timestamp}`, slug })
+    await Event.create({ title: `JSON Search ${timestamp}`, slug, startsAt: new Date(), status: 'draft' })
 
     const res = await admin.get(`/admin/search?q=JSON+Search+${timestamp}&format=json`)
     assert.strictEqual(res.status, 200)
     assert.ok((res.headers.get('content-type') || '').includes('application/json'))
     const json = await res.json()
     assert.ok(Array.isArray(json.groups), 'JSON response should include groups array')
-    const group = json.groups.find(g => g.plural === 'categories')
-    assert.ok(group, 'Should find categories group')
+    const group = json.groups.find(g => g.plural === 'events')
+    assert.ok(group, 'Should find events group')
     assert.ok(group.items.some(i => i.title.includes(`JSON Search ${timestamp}`)), 'Search item should match')
-    assert.ok(group.items[0].url.startsWith('/admin/categories/'), 'Item URL should point to admin detail')
+    assert.ok(group.items[0].url.startsWith('/admin/events/'), 'Item URL should point to admin detail')
   })
 
   test('empty global search JSON returns empty groups', async ({ request }) => {
@@ -725,10 +582,10 @@ describe('Admin Panel', () => {
   test('lookup endpoint returns JSON matching q', async ({ request }) => {
     const admin = await adminRequest(request)
     const ts = Date.now()
-    await Category.create({ name: `Lookup Alpha ${ts}`, slug: `look-a-${ts}` })
-    await Category.create({ name: `Other Beta ${ts}`, slug: `look-b-${ts}` })
+    await Event.create({ title: `Lookup Alpha ${ts}`, slug: `look-a-${ts}`, startsAt: new Date(), status: 'draft' })
+    await Event.create({ title: `Other Beta ${ts}`, slug: `look-b-${ts}`, startsAt: new Date(), status: 'draft' })
 
-    const res = await admin.get(`/admin/categories/lookup?q=Lookup+Alpha+${ts}`)
+    const res = await admin.get(`/admin/events/lookup?q=Lookup+Alpha+${ts}`)
     assert.strictEqual(res.status, 200)
     assert.ok((res.headers.get('content-type') || '').includes('application/json'))
     const json = await res.json()
@@ -740,112 +597,109 @@ describe('Admin Panel', () => {
   test('lookup endpoint hydrates by ids= parameter', async ({ request }) => {
     const admin = await adminRequest(request)
     const ts = Date.now()
-    const cat1 = await Category.create({ name: `Hydrate One ${ts}`, slug: `hyd1-${ts}` })
-    const cat2 = await Category.create({ name: `Hydrate Two ${ts}`, slug: `hyd2-${ts}` })
+    const ev1 = await Event.create({ title: `Hydrate One ${ts}`, slug: `hyd1-${ts}`, startsAt: new Date(), status: 'draft' })
+    const ev2 = await Event.create({ title: `Hydrate Two ${ts}`, slug: `hyd2-${ts}`, startsAt: new Date(), status: 'draft' })
 
-    const res = await admin.get(`/admin/categories/lookup?ids=${cat1.id},${cat2.id}`)
+    const res = await admin.get(`/admin/events/lookup?ids=${ev1.id},${ev2.id}`)
     assert.strictEqual(res.status, 200)
     const json = await res.json()
     assert.strictEqual(json.data.length, 2)
     const values = json.data.map(r => r.value).sort()
-    assert.deepStrictEqual(values, [cat1.id, cat2.id].sort())
+    assert.deepStrictEqual(values, [ev1.id, ev2.id].sort())
   })
 
-  test('lookup endpoint respects view permissions', async ({ request }) => {
-    const viewer = await roleRequest(request, ['viewer'])
-    const forbidden = await viewer.get('/admin/orders/lookup')
-    assert.strictEqual(forbidden.status, 403)
+  test('strictAdmin blocks organizer from lookup endpoints under /admin', async ({ request }) => {
+    const organizer = await roleRequest(request, ['organizer'])
+    const res = await organizer.get('/admin/users/lookup')
+    // Redirected off /admin before the resource-specific gate ever runs.
+    assert.strictEqual(res.status, 302)
+    assert.strictEqual(res.headers.get('location'), '/')
   })
 
   test('lookup endpoint uses resource displayLabel when set', async ({ request }) => {
     const admin = await adminRequest(request)
     const ts = Date.now()
-    const cat = await Category.create({ name: `Label Test ${ts}`, slug: `label-${ts}` })
+    const event = await Event.create({ title: `Label Test ${ts}`, slug: `label-${ts}`, startsAt: new Date(), status: 'draft' })
 
-    const res = await admin.get(`/admin/categories/lookup?ids=${cat.id}`)
+    const res = await admin.get(`/admin/events/lookup?ids=${event.id}`)
     const json = await res.json()
-    // With no displayLabel override, defaults to name.
+    // With displayLabel set to e => e.title, label should be the title.
     assert.strictEqual(json.data[0].label, `Label Test ${ts}`)
   })
 
-  test('filtering products by belongsTo uses equality, not LIKE', async ({ request }) => {
+  test('filtering ticket types by belongsTo uses equality, not LIKE', async ({ request }) => {
     const admin = await adminRequest(request)
     const ts = Date.now()
-    const catA = await Category.create({ name: `Cat A ${ts}`, slug: `cat-a-${ts}` })
-    const catB = await Category.create({ name: `Cat B ${ts}`, slug: `cat-b-${ts}` })
+    const evA = await Event.create({ title: `Ev A ${ts}`, slug: `ev-a-${ts}`, startsAt: new Date(), status: 'draft' })
+    const evB = await Event.create({ title: `Ev B ${ts}`, slug: `ev-b-${ts}`, startsAt: new Date(), status: 'draft' })
 
-    await Product.create({ name: `Filter A ${ts}`, slug: `filt-a-${ts}`, price: 10, stock: 1, published: true, category: catA.id })
-    await Product.create({ name: `Filter B ${ts}`, slug: `filt-b-${ts}`, price: 20, stock: 1, published: true, category: catB.id })
+    await TicketType.create({ name: `Filter A ${ts}`, price: 10, quantity: 100, event: evA.id })
+    await TicketType.create({ name: `Filter B ${ts}`, price: 20, quantity: 50, event: evB.id })
 
-    const res = await admin.get(`/admin/products?f[category]=${catA.id}`)
+    const res = await admin.get(`/admin/ticket_types?f[event]=${evA.id}`)
     assert.strictEqual(res.status, 200)
     const text = await res.text()
-    assert.ok(text.includes(`Filter A ${ts}`), 'Should include products in category A')
-    assert.ok(!text.includes(`Filter B ${ts}`), 'Should NOT include products in category B')
+    assert.ok(text.includes(`Filter A ${ts}`), 'Should include ticket types for event A')
+    assert.ok(!text.includes(`Filter B ${ts}`), 'Should NOT include ticket types for event B')
   })
 
   test('edit form hydrates belongsTo combobox with current value label', async ({ request }) => {
     const admin = await adminRequest(request)
     const ts = Date.now()
-    const cat = await Category.create({ name: `Edit Hydrate ${ts}`, slug: `eh-${ts}` })
-    const product = await Product.create({
-      name: `Edit Product ${ts}`,
-      slug: `ep-${ts}`,
+    const event = await Event.create({ title: `Edit Hydrate ${ts}`, slug: `eh-${ts}`, startsAt: new Date(), status: 'draft' })
+    const ticketType = await TicketType.create({
+      name: `Edit TT ${ts}`,
       price: 12,
-      stock: 1,
-      published: true,
-      category: cat.id,
+      quantity: 100,
+      event: event.id,
     })
-    const res = await admin.get(`/admin/products/${product.id}/edit`)
+    const res = await admin.get(`/admin/ticket_types/${ticketType.id}/edit`)
     assert.strictEqual(res.status, 200)
     const text = await res.text()
     assert.ok(text.includes('<fb-combobox'))
-    assert.ok(text.includes(`Edit Hydrate ${ts}`), 'Edit form should pre-populate label of current category')
-    assert.ok(text.includes(`value="${cat.id}"`) || text.includes(`value="${String(cat.id)}"`))
+    assert.ok(text.includes(`Edit Hydrate ${ts}`), 'Edit form should pre-populate label of current event')
+    assert.ok(text.includes(`value="${event.id}"`) || text.includes(`value="${String(event.id)}"`))
   })
 
   test('detail page renders belongsTo relations as chip links', async ({ request }) => {
     const admin = await adminRequest(request)
     const ts = Date.now()
-    const cat = await Category.create({ name: `Detail Rel ${ts}`, slug: `dr-${ts}` })
-    const product = await Product.create({
-      name: `Detail Product ${ts}`,
-      slug: `dp-${ts}`,
+    const event = await Event.create({ title: `Detail Rel ${ts}`, slug: `dr-${ts}`, startsAt: new Date(), status: 'draft' })
+    const ticketType = await TicketType.create({
+      name: `Detail TT ${ts}`,
       price: 12,
-      stock: 1,
-      published: true,
-      category: cat.id,
+      quantity: 50,
+      event: event.id,
     })
-    const res = await admin.get(`/admin/products/${product.id}`)
+    const res = await admin.get(`/admin/ticket_types/${ticketType.id}`)
     assert.strictEqual(res.status, 200)
     const text = await res.text()
     assert.ok(text.includes('fb-chip'), 'Detail belongsTo should render as chip')
-    assert.ok(text.includes(`/admin/categories/${cat.id}`), 'Chip should link to related record')
+    assert.ok(text.includes(`/admin/events/${event.id}`), 'Chip should link to related record')
   })
 
   test('detail page renders configured sections', async ({ request }) => {
     const admin = await adminRequest(request)
     const ts = Date.now()
-    const order = await Order.create({ status: 'pending', total: 42, shippingAddress: `123 Test St ${ts}` })
+    const order = await Order.create({ orderNumber: `ORD-DETAIL-${ts}`, email: 'detail@test.com', name: `Detail Name ${ts}`, status: 'pending', total: 42 })
     const res = await admin.get(`/admin/orders/${order.id}`)
     assert.strictEqual(res.status, 200)
     const text = await res.text()
-    assert.ok(text.includes('Overview'), 'Should render Overview section')
+    assert.ok(text.includes('Customer'), 'Should render Customer section')
     assert.ok(text.includes('Payment'), 'Should render Payment section')
-    assert.ok(text.includes('Shipping'), 'Should render Shipping section')
-    assert.ok(text.includes(`123 Test St ${ts}`), 'Should render address value')
+    assert.ok(text.includes(`Detail Name ${ts}`), 'Should render name value')
   })
 
   test('create form prefills relation from query string', async ({ request }) => {
     const admin = await adminRequest(request)
     const ts = Date.now()
-    const cat = await Category.create({ name: `Prefill Cat ${ts}`, slug: `pf-${ts}` })
+    const event = await Event.create({ title: `Prefill Event ${ts}`, slug: `pf-${ts}`, startsAt: new Date(), status: 'draft' })
 
-    const res = await admin.get(`/admin/products/create?category=${cat.id}`)
+    const res = await admin.get(`/admin/ticket_types/create?event=${event.id}`)
     assert.strictEqual(res.status, 200)
     const text = await res.text()
-    assert.ok(text.includes(`Prefill Cat ${ts}`), 'Prefilled category should be present as initial label')
-    assert.ok(new RegExp(`value="${cat.id}"`).test(text), `Prefill should set value="${cat.id}"`)
+    assert.ok(text.includes(`Prefill Event ${ts}`), 'Prefilled event should be present as initial label')
+    assert.ok(new RegExp(`value="${event.id}"`).test(text), `Prefill should set value="${event.id}"`)
   })
 
   test('sidebar renders resource group labels', async ({ request }) => {
@@ -853,19 +707,19 @@ describe('Admin Panel', () => {
     const res = await admin.get('/admin')
     assert.strictEqual(res.status, 200)
     const text = await res.text()
-    // Product & Category are grouped under Catalog; Order under Sales.
-    assert.ok(text.includes('Catalog'), 'Sidebar should render Catalog group')
-    assert.ok(text.includes('Sales'), 'Sidebar should render Sales group')
+    // Event, TicketType, Order, Attendee, DiscountCode are grouped under Events; User under System.
+    assert.ok(text.includes('Events'), 'Sidebar should render Events group')
     assert.ok(text.includes('System'), 'Sidebar should render System group')
   })
 
   test('dashboard renders chart widget sparkline', async ({ request }) => {
     const admin = await adminRequest(request)
-    await Order.create({ status: 'pending', total: 20 })
+    const ts = Date.now()
+    await Order.create({ orderNumber: `ORD-CHART-${ts}`, email: 'chart@test.com', name: 'Chart Test', status: 'pending', total: 20 })
     const res = await admin.get('/admin')
     assert.strictEqual(res.status, 200)
     const text = await res.text()
-    assert.ok(text.includes('Revenue (last 30 days)') || text.includes('Orders (last 7 days)'), 'Chart widget label should render')
+    assert.ok(text.includes('Event Revenue') || text.includes('Orders (last 7 days)'), 'Chart widget label should render')
     assert.ok(text.includes('fb-widget-chart-'), 'Chart widget should render a canvas element')
   })
 
@@ -908,15 +762,13 @@ describe('Admin Panel', () => {
     const res = await admin.get('/admin')
     assert.strictEqual(res.status, 200)
     const text = await res.text()
-    // Products / Orders opt in explicitly via .dashboard(true)/.dashboard({...}).
-    assert.ok(text.includes('Products'), 'Products stat card should render')
+    // Events / Orders / Attendees opt in explicitly via .dashboard({...}).
+    assert.ok(text.includes('Events'), 'Events stat card should render')
     assert.ok(text.includes('Orders'), 'Orders stat card should render')
-    // Categories/Tags/Users/framework models did NOT opt in — must not be stat cards.
+    // Users/framework models did NOT opt in — must not be stat cards.
     // We look for a card-shaped block with these labels; broader "text includes"
     // would false-positive against the sidebar.
     const cards = (text.match(/class="stat-card"[\s\S]*?<\/a>|class="stat-card"[\s\S]*?<\/div>/g) || []).join('')
-    assert.ok(!cards.includes('Categories'), 'Categories should NOT be a stat card')
-    assert.ok(!cards.includes('Tags'), 'Tags should NOT be a stat card')
     assert.ok(!cards.includes('Users'), 'Users should NOT be a stat card')
     assert.ok(!cards.includes('Failed Jobs'), 'Failed Jobs should NOT be a stat card')
     assert.ok(!cards.includes('API Tokens'), 'API Tokens should NOT be a stat card')
@@ -925,7 +777,7 @@ describe('Admin Panel', () => {
 
   test('filter popover renders in the toolbar', async ({ request }) => {
     const admin = await adminRequest(request)
-    const res = await admin.get('/admin/products')
+    const res = await admin.get('/admin/events')
     assert.strictEqual(res.status, 200)
     const text = await res.text()
     assert.ok(text.includes('<fb-popover'), 'Filter popover component should render')
@@ -934,33 +786,33 @@ describe('Admin Panel', () => {
 
   test('active filters render as removable chips', async ({ request }) => {
     const admin = await adminRequest(request)
-    const res = await admin.get('/admin/products?f%5Bpublished%5D=1')
+    const res = await admin.get('/admin/events?f%5Bstatus%5D=draft')
     assert.strictEqual(res.status, 200)
     const text = await res.text()
     assert.ok(text.includes('fb-filter-chips'), 'Chip container should render')
     // Chip includes label + display value + remove link.
-    assert.ok(/fb-filter-chip[\s\S]*Published[\s\S]*Yes/.test(text), 'Chip label + value')
+    assert.ok(/fb-filter-chip[\s\S]*Status[\s\S]*draft/i.test(text), 'Chip label + value')
     assert.ok(/fb-filter-chip-remove/.test(text), 'Chip includes a remove link')
-    // The chip remove link drops the filter key entirely (no blank f[published]=).
+    // The chip remove link drops the filter key entirely (no blank f[status]=).
     // When it's the last filter, f_reset=1 is added to clear the persist cookie.
     const chipMatch = text.match(/href="([^"]*)"[^>]*class="fb-filter-chip-remove"/)
     assert.ok(chipMatch, 'Chip remove link exists')
-    assert.ok(!chipMatch[1].includes('f%5Bpublished%5D='), 'Remove link should drop the filter key, not blank it')
+    assert.ok(!chipMatch[1].includes('f%5Bstatus%5D='), 'Remove link should drop the filter key, not blank it')
     assert.ok(chipMatch[1].includes('f_reset=1'), 'Remove link includes f_reset when it is the last filter')
   })
 
   test('bulk export selected rows produces a CSV (sync path)', async ({ request }) => {
     const admin = await adminRequest(request)
     const ts = Date.now()
-    const p1 = await Product.create({ name: `BulkExport A ${ts}`, slug: `be-a-${ts}`, price: 10, stock: 1, published: true })
-    const p2 = await Product.create({ name: `BulkExport B ${ts}`, slug: `be-b-${ts}`, price: 20, stock: 1, published: true })
+    const e1 = await Event.create({ title: `BulkExport A ${ts}`, slug: `be-a-${ts}`, startsAt: new Date(), status: 'draft' })
+    const e2 = await Event.create({ title: `BulkExport B ${ts}`, slug: `be-b-${ts}`, startsAt: new Date(), status: 'published' })
 
     // Force sync path so we can inspect the CSV stream directly.
-    const res = await admin.post('/admin/products/export')
+    const res = await admin.post('/admin/events/export')
       .form({
         format: 'csv',
-        columns: 'id,name,slug,price',
-        ids: [String(p1.id), String(p2.id)],
+        columns: 'id,title,slug,status',
+        ids: [String(e1.id), String(e2.id)],
       })
     assert.strictEqual(res.status, 200)
     assert.ok((res.headers.get('Content-Type') || '').includes('text/csv'))
@@ -973,20 +825,20 @@ describe('Admin Panel', () => {
     const first = (recent.data || recent)[0]
     assert.ok(first, 'AdminExport row should be created')
     assert.strictEqual(first.status, 'complete')
-    assert.strictEqual(first.resource, 'products')
+    assert.strictEqual(first.resource, 'events')
   })
 
   test('queued export creates a pending AdminExport when queue is available', async ({ request }) => {
     const admin = await adminRequest(request)
     const ts = Date.now()
-    const p = await Product.create({ name: `QueueExp ${ts}`, slug: `qe-${ts}`, price: 5, stock: 1, published: true })
+    const e = await Event.create({ title: `QueueExp ${ts}`, slug: `qe-${ts}`, startsAt: new Date(), status: 'draft' })
 
     const before = await (await import('foobarjs/admin')).AdminExport.query().count()
     // Setting export.mode=queue would require config change; instead we test the
     // sync completion path. Verify the AdminExport record exists after sync.
-    const res = await admin.post('/admin/products/export').form({
+    const res = await admin.post('/admin/events/export').form({
       format: 'csv',
-      ids: [String(p.id)],
+      ids: [String(e.id)],
     })
     assert.strictEqual(res.status, 200)
     const after = await (await import('foobarjs/admin')).AdminExport.query().count()
@@ -998,15 +850,16 @@ describe('Admin Panel', () => {
     const { AdminExport } = await import('foobarjs/admin')
     const record = await AdminExport.create({
       userId: 99999,
-      resource: 'products',
+      resource: 'events',
       status: 'complete',
       filePath: 'exports/nonexistent.csv',
     })
 
-    const other = await roleRequest(request, ['editor'])
+    const other = await roleRequest(request, ['organizer'])
     const res = await other.get(`/admin/exports/${record.id}/download`)
+    // strictAdmin: organizer is redirected off /admin before the export-specific check runs.
     assert.strictEqual(res.status, 302)
-    assert.strictEqual(res.headers.get('location'), '/admin')
+    assert.strictEqual(res.headers.get('location'), '/')
   })
 
   test('admin_exports admin list is registered under System', async ({ request }) => {

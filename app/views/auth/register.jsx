@@ -2,22 +2,43 @@ import App from '../layouts/App.jsx'
 
 export default function Register({ error, name, email }) {
   return (
-    <App title="Register">
-      <div class="container auth-form">
-        <h1>Register</h1>
-        {error && <div class="alert alert-error">{error}</div>}
-        <form action="/register" method="post">
-          <label>Name</label>
-          <input type="text" name="name" value={name ?? ''} required />
-          <label>Email</label>
-          <input type="email" name="email" value={email ?? ''} required />
-          <label>Password</label>
-          <input type="password" name="password" required />
-          <label>Confirm Password</label>
-          <input type="password" name="password_confirmation" required />
-          <button type="submit" class="btn btn-primary">Register</button>
-        </form>
-        <p>Already have an account? <a href="/login">Login</a></p>
+    <App title="Create account">
+      <div class="auth-shell">
+        <div class="auth-panel">
+          <div class="auth-header">
+            <div class="auth-mark">◆</div>
+            <h1>Create your account</h1>
+            <p class="auth-sub">Sign up to attend events or start hosting your own.</p>
+          </div>
+
+          {error && <div class="flash error">{error}</div>}
+
+          <form action="/register" method="post" class="auth-form">
+            <div class="form-group">
+              <label for="name">Full name</label>
+              <input type="text" id="name" name="name" value={name ?? ''} required autofocus />
+            </div>
+            <div class="form-group">
+              <label for="email">Email</label>
+              <input type="email" id="email" name="email" value={email ?? ''} required />
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" name="password" required />
+              </div>
+              <div class="form-group">
+                <label for="password_confirmation">Confirm</label>
+                <input type="password" id="password_confirmation" name="password_confirmation" required />
+              </div>
+            </div>
+            <button type="submit" class="btn btn-primary btn-lg btn-block">Create account</button>
+          </form>
+
+          <p class="auth-alt">
+            Already have an account? <a href="/login">Sign in</a>
+          </p>
+        </div>
       </div>
     </App>
   )
