@@ -1,4 +1,5 @@
-import { Controller, SignedUrl } from 'foobarjs/core'
+import { Controller } from 'foobarjs/core'
+import { Url } from 'foobarjs/support'
 import { Str } from 'foobarjs/support'
 import { Mailer } from 'foobarjs/mail'
 import Attendee from '../models/attendee.model.js'
@@ -51,13 +52,14 @@ class TicketsController extends Controller {
   }
 
   async verify() {
-    const { valid, expired, params } = SignedUrl.verify(this.c.req.url, this._secret())
-    if (!valid) {
-      this.flash('error', expired ? 'That link has expired. Request a new one.' : 'That link is invalid.')
+    if (!Url.hasValidSignature(this.c)) {
+      this.flash('error', 'That link is invalid or has expired. Request a new one.')
       return this.redirect('/tickets')
     }
-
-    const email = Str.lower(params.email)
+    // After hasValidSignature() passes, the URL's query params are HMAC-verified
+    // — reading them here is equivalent to reading the trusted `params` map that
+    // SignedUrl.verify used to return.
+    const email = Str.lower(this.query('email'))
     const attendee = await Attendee.where('email', email).first()
     if (!attendee) {
       this.flash('error', 'No tickets found for that email.')
@@ -113,8 +115,7 @@ class TicketsController extends Controller {
   // --- helpers ------------------------------------------------------------
 
   _buildMagicLink(email) {
-    const base = `${new URL(this.c.req.url).origin}/tickets/verify`
-    return SignedUrl.sign(base, { email }, this._secret(), { expiresIn: LINK_TTL_SECONDS })
+    return Url.signedRoute('tickets.verify', { email }, { ttl: LINK_TTL_SECONDS })
   }
 
   _magicLinkBody(link) {
@@ -128,12 +129,6 @@ class TicketsController extends Controller {
       '',
       "If you didn't request this, you can ignore this email.",
     ].join('\n')
-  }
-
-  _secret() {
-    const secret = this.config('app.secret')
-    if (!secret) throw new Error('APP_SECRET is not configured')
-    return secret
   }
 
   _logger() {
