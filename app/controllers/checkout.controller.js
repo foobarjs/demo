@@ -26,16 +26,7 @@ class CheckoutController extends Controller {
   }
 
   async store() {
-    let request
-    try {
-      request = await this.validate(CheckoutValidator)
-    } catch (err) {
-      if (err.name === 'ValidationError') {
-        return this.back().withErrors(err).withInput(err.input)
-      }
-      throw err
-    }
-
+    const request = await this.validateOrBack(CheckoutValidator)
     const body = request.validated()
     const event = await Event.findOrFail(body.event_id)
     if (event.status !== 'published') {

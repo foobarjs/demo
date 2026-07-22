@@ -5,10 +5,10 @@ before(async () => {
 })
 
 describe('Form Request Validation', () => {
-  // /checkout lives in routes/web.js and is a pure SSR route — it always
-  // redirects on validation failure, regardless of Accept header. API-style
-  // callers that need JSON errors should hit routes registered in routes/api.js,
-  // which return 422 via the built-in `api` middleware stack.
+  // v0.3.2: ValidationError handling is content-negotiated by the framework's
+  // ErrorHandler. Web (HTML) request → 302 redirect back with flashed errors +
+  // old input. JSON request → 422 with an errors map. Controllers just do
+  // `await this.validateOrBack(V)` and let the framework handle both shapes.
   test('redirects back with errors when validation fails (HTML)', async ({ request }) => {
     const res = await request
       .post('/checkout')
@@ -18,11 +18,13 @@ describe('Form Request Validation', () => {
     assert.strictEqual(res.status, 302)
   })
 
-  test('redirects back with errors even when Accept is JSON (web route)', async ({ request }) => {
+  test('returns 422 JSON when Accept is JSON (web route)', async ({ request }) => {
     const res = await request
       .post('/checkout')
       .send({ name: '', email: '', event_id: '', ticket_type_id: '', quantity: '' })
 
-    assert.strictEqual(res.status, 302)
+    assert.strictEqual(res.status, 422)
+    const body = await res.json()
+    assert.ok(body?.errors, 'expected errors map in JSON body')
   })
 })

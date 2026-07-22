@@ -21,16 +21,7 @@ class TicketsController extends Controller {
   }
 
   async send() {
-    let request
-    try {
-      request = await this.validate(SendMagicLinkValidator)
-    } catch (err) {
-      if (err.name === 'ValidationError') {
-        return this.back().withErrors(err).withInput(err.input)
-      }
-      throw err
-    }
-
+    const request = await this.validateOrBack(SendMagicLinkValidator)
     const email = request.validated().email
     const anyRow = await Attendee.where('email', email).first()
 
@@ -96,16 +87,7 @@ class TicketsController extends Controller {
     const ticket = await Attendee.findOrFail(this.param('id'))
     await this.authorize('updateName', ticket)
 
-    let request
-    try {
-      request = await this.validate(UpdateTicketNameValidator)
-    } catch (err) {
-      if (err.name === 'ValidationError') {
-        return this.back().withErrors(err).withInput(err.input)
-      }
-      throw err
-    }
-
+    const request = await this.validateOrBack(UpdateTicketNameValidator)
     ticket.name = request.validated().name
     await ticket.save()
     this.flash('success', 'Ticket updated.')
