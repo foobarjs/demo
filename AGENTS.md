@@ -177,6 +177,22 @@ export default ProductSerializer
    the new example.
 4. Run `foobar test` and confirm all 253+ tests still pass.
 
+## Security-sensitive demo code
+
+Demo controllers that touch session/auth (login, magic-link verify,
+authorize) or that merge request input into models must ship an
+assertion in the same commit that would catch the class of bug the
+change could introduce. Two examples already in the tree that follow
+this pattern: `test/form-request.test.js` (validates the redirect vs.
+422 contract) and `test/events.test.js` (asserts the checkout flow's
+end state, including that the DB row lands with lowered/trimmed
+fields).
+
+Full rule and the list of framework files that trigger the check
+is in [`framework/AGENTS.md`](../framework/AGENTS.md) under
+"Security-sensitive code: co-shipped tests are mandatory". Applies here
+because the demo consumes those framework surfaces directly.
+
 ## Never do
 
 - Never commit or push automatically. Wait for explicit user instruction.
