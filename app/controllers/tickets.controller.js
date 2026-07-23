@@ -10,7 +10,7 @@ import UpdateTicketNameValidator from '../validators/update-ticket-name.validato
 const LINK_TTL_SECONDS = 30 * 60  // 30 minutes
 
 class TicketsController extends Controller {
-  static auth = false
+  static withoutMiddleware = ["auth"]
   static middleware = {
     use: ['auth', 'RequireAttendee'],
     only: ['my', 'edit', 'update'],

@@ -3,7 +3,7 @@ import Event from '../models/event.model.js'
 import TicketType from '../models/ticket-type.model.js'
 
 class EventsController extends Controller {
-  static auth = false
+  static withoutMiddleware = ["auth"]
 
   async index() {
     const events = await this.paginate(

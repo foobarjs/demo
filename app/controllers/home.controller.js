@@ -2,7 +2,7 @@ import { Controller } from 'foobarjs/core'
 import Event from '../models/event.model.js'
 
 class HomeController extends Controller {
-  static auth = false
+  static withoutMiddleware = ["auth"]
   async index() {
     const events = await Event.where('status', 'published')
       .orderBy('startsAt', 'asc')

@@ -1,7 +1,7 @@
 import { Controller, HttpException, NotFoundError, ForbiddenError } from 'foobarjs/core'
 
 class BoomController extends Controller {
-  static auth = false
+  static withoutMiddleware = ["auth"]
 
   async index() {
     const kind = this.query('kind')

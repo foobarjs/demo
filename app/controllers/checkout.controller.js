@@ -14,7 +14,7 @@ import CheckoutValidator from '../validators/checkout.validator.js'
 // messages. For JSON checkout, expose a separate handler in routes/api.js
 // (or app/api/*.api.js) so the response contract stays predictable per route.
 class CheckoutController extends Controller {
-  static auth = false
+  static withoutMiddleware = ["auth"]
 
   async index() {
     const eventId = this.query('event')
