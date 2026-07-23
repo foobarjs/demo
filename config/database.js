@@ -1,6 +1,19 @@
+const driver = process.env.DB_CONNECTION || 'sqlite'
+
+const base = driver === 'mongodb'
+  ? {
+      driver: 'mongodb',
+      database: process.env.MONGO_DATABASE || 'foobar_demo_dogfood',
+      host: process.env.MONGO_HOST || 'localhost',
+      port: Number(process.env.MONGO_PORT || 27017),
+    }
+  : {
+      driver,
+      database: process.env.DB_DATABASE || 'foobar.db',
+    }
+
 export default {
-  driver: process.env.DB_CONNECTION || 'sqlite',
-  database: process.env.DB_DATABASE || 'foobar.db',
+  ...base,
 
   connections: {
     postgres: {

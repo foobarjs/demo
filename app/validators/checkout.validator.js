@@ -6,8 +6,8 @@ class CheckoutValidator extends FormRequest {
     return {
       name: Field.string().required().minLength(2),
       email: Field.string().required().email().lowercase(),
-      event_id: Field.number().required(),
-      ticket_type_id: Field.number().required(),
+      event_id: Field.string().required(),
+      ticket_type_id: Field.string().required(),
       quantity: Field.number().integer().required().min(1).max(10),
     }
   }
