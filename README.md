@@ -1,6 +1,6 @@
 # foobarjs demo — event platform
 
-> **Experimental — for exploration only.** Tracks foobarjs v0.8.0. APIs and conventions may still shift between releases.
+> **Experimental — for exploration only.** Tracks foobarjs v0.9.0. APIs and conventions may still shift between releases.
 
 A small event-ticketing platform built with [foobarjs](https://github.com/foobarjs/foobarjs). It's the reference application — every subsystem the framework ships is exercised somewhere in here, so it doubles as a "how do I…" cookbook you can grep.
 
